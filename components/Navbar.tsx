@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/s
 import Image from 'next/image';
 import Link from 'next/link';
 import { ModeToggle } from './ModeToggle';
+import NavLogo from './NavLogo';
 
 
 const logoImage = '/FoodHublogo.svg';
@@ -32,22 +33,22 @@ export default function NavbarSection() {
   return (
     <nav className="mx-auto flex h-18 w-full max-w-7xl items-center gap-12 px-6 sm:px-4">
       <Link href="/" className="[&_svg]:fill-primary [&_svg]:text-primary inline-flex h-9 flex-1 items-center gap-2 text-2xl/none font-bold tracking-tight [&_svg]:size-7">
-        <Image src={logoImage} alt='FoodHub' height={40} width={150} />
+        <NavLogo />
       </Link>
       <div className="hidden gap-3 lg:inline-flex">
         {navItems.map((item) => (
           <Button key={item.title} asChild variant={'ghost'}>
-            <a href={item.href}>{item.title}</a>
+            <Link href={item.href}>{item.title}</Link>
           </Button>
         ))}
       </div>
       <div className="hidden flex-1 justify-end gap-3 lg:inline-flex">
         <ModeToggle />
         <Button asChild variant={'ghost'}>
-          <Link href="#">Log in</Link>
+          <Link href="/login">Log in</Link>
         </Button>
         <Button asChild>
-          <Link href="#">Sign up</Link>
+          <Link href="/signup">Sign up</Link>
         </Button>
       </div>
       <Sheet>
@@ -65,7 +66,7 @@ export default function NavbarSection() {
           <nav className="-mx-4 my-6 flex flex-1 flex-col gap-2">
             {navItems.map((item) => (
               <Button key={item.title} asChild className="justify-start text-base" variant={'ghost'}>
-                <a href={item.href}>{item.title}</a>
+                <Link href={item.href}>{item.title}</Link>
               </Button>
             ))}
           </nav>
