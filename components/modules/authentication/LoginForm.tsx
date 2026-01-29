@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input"
 import NavLogo from "@/components/NavLogo"
 import Link from "next/link"
+import SignInWithGoogleButton from "./components/SignInWithGoogleButton"
 
 export function LoginForm({
   className,
@@ -61,15 +62,15 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit">Login</Button>
-                <Button variant="outline" type="button">
-                  Login with Google
-                </Button>
+                <SignInWithGoogleButton text={"Log In With Google"}/>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <Link href="/signup">Sign up</Link>
                 </FieldDescription>
-                <Link href={"/"} className="w-full flex justify-center items-center pt-12 cursor-pointer">
-                  <Button>Go to Homepage</Button>
-                </Link>
+                <div className="flex justify-center items-center mt-12">
+                  <Link href={"/"} className="flex justify-center items-center mt-12 cursor-pointer">
+                    <Button className="cursor-pointer">Go to Homepage</Button>
+                  </Link>
+                </div>
               </Field>
             </FieldGroup>
           </form>

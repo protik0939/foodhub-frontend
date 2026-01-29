@@ -14,10 +14,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import Image from "next/image"
 import Link from "next/link"
+import SignInWithGoogleButton from "./components/SignInWithGoogleButton"
 
 export function SignUpForm({ ...props }: React.ComponentProps<typeof Card>) {
+
+
   return (
     <Card {...props}>
       <CardHeader>
@@ -68,15 +70,15 @@ export function SignUpForm({ ...props }: React.ComponentProps<typeof Card>) {
             <FieldGroup>
               <Field>
                 <Button type="submit">Create Account</Button>
-                <Button variant="outline" type="button">
-                  Sign up with Google
-                </Button>
+                <SignInWithGoogleButton text={"Sign Up With Google"}/>
                 <FieldDescription className="px-6 text-center">
-                  Already have an account? <a href="/login">Log in</a>
+                  Already have an account? <Link href="/login">Log in</Link>
                 </FieldDescription>
-                <Link href={"/"} className="w-full flex justify-center items-center pt-12 cursor-pointer">
-                  <Button>Go to Homepage</Button>
-                </Link>
+                <div className="flex justify-center items-center mt-12">
+                  <Link href={"/"}>
+                    <Button className="cursor-pointer">Go to Homepage</Button>
+                  </Link>
+                </div>
               </Field>
             </FieldGroup>
           </FieldGroup>
