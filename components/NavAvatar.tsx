@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,35 +13,62 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { authClient } from "@/lib/auth-client"
 
-export function NavAvatar({ imageUrl }: { imageUrl: string }) {
+export function NavAvatar() {
+    const { data: session, isPending } = authClient.useSession()
 
     const handleLogout = async () => {
-        await authClient.signOut();
+        await authClient.signOut()
     }
 
+    if (isPending) return null
+
+    if (!session) {
+        return (
+            <div className="flex gap-2">
+                <Button asChild variant="ghost">
+                    <Link href="/login">Log in</Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/signup">Sign up</Link>
+                </Button>
+            </div>
+        )
+    }
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar>
-                        <AvatarImage src={imageUrl} alt="Profile Photo" />
-                        <AvatarFallback>CN</AvatarFallback>
+                        <AvatarImage
+                            src={session.user?.image || "/images/dummy-avatar.jpg"}
+                            alt="Profile Photo"
+                        />
+                        <AvatarFallback>
+                            {session.user?.name?.[0]?.toUpperCase() ?? "U"}
+                        </AvatarFallback>
                     </Avatar>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-32">
+
+            <DropdownMenuContent className="w-36">
                 <DropdownMenuGroup>
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
-                    <DropdownMenuItem>Billing</DropdownMenuItem>
-                    <DropdownMenuItem>Settings</DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                    <DropdownMenuItem variant="destructive" onClick={handleLogout}>
-                        Log out
+                    <DropdownMenuItem asChild>
+                        <Link href="/profile">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/settings">Settings</Link>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="text-red-600 focus:text-red-600"
+                >
+                    Log out
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     )

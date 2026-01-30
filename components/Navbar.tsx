@@ -9,6 +9,7 @@ import NavLogo from './NavLogo';
 import { cookies } from 'next/headers';
 import { SessionResponse } from '@/types/user.type';
 import { NavAvatar } from './NavAvatar';
+import { userService } from '@/services/user.service';
 
 
 const logoImage = '/FoodHublogo.svg';
@@ -34,18 +35,6 @@ const navItems = [
 
 export default async function NavbarSection() {
 
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${process.env.BETTER_AUTH_URL}/api/auth/get-session`, {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-  });
-
-  const userData: SessionResponse = await res.json();
-
-
   return (
     <nav className="mx-auto flex h-18 w-full max-w-7xl items-center gap-12 px-6 sm:px-4">
       <Link href="/" className="[&_svg]:fill-primary [&_svg]:text-primary inline-flex h-9 flex-1 items-center gap-2 text-2xl/none font-bold tracking-tight [&_svg]:size-7">
@@ -60,20 +49,7 @@ export default async function NavbarSection() {
       </div>
       <div className="hidden flex-1 justify-end gap-3 lg:inline-flex">
         <ModeToggle />
-        {
-          userData?.user ?
-            <NavAvatar imageUrl={userData.user.image ? userData.user.image : "/dummy-avatar.jpg"} />
-            :
-            <>
-              <Button asChild variant={'ghost'}>
-                <Link href="/login">Log in</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/signup">Sign up</Link>
-              </Button>
-            </>
-
-        }
+        <NavAvatar />
       </div>
       <Sheet>
         <SheetTrigger asChild className="ml-auto lg:hidden">
