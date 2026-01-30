@@ -38,7 +38,7 @@ export function NavAvatar() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button variant="ghost" size="icon" className="rounded-full cursor-pointer">
                     <Avatar>
                         <AvatarImage
                             src={session.user?.image || "/images/dummy-avatar.jpg"}

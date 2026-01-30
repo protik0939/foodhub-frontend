@@ -23,21 +23,19 @@ import { useForm } from "@tanstack/react-form";
 import Link from "next/link";
 import { toast } from "sonner";
 import * as z from "zod";
+import SignInWithGoogleButton from "./components/SignInWithGoogleButton";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Loader2, Home } from "lucide-react";
+import { useState } from "react";
 
 const formSchema = z.object({
-  password: z.string().min(8, "Minimum length is 8"),
   email: z.email(),
+  password: z.string().min(8, "Minimum length is 8"),
 });
 
-export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
-  const handleGoogleLogin = async () => {
-    const data = authClient.signIn.social({
-      provider: "google",
-      callbackURL: process.env.APP_URL!,
-    });
-
-    console.log(data);
-  };
+export function LoginForm(props: React.ComponentProps<typeof Card>) {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -48,35 +46,38 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      const toastId = toast.loading("Logging in");
+      const toastId = toast.loading("Logging in...");
+
       try {
-        const { data, error } = await authClient.signIn.email(value);
+        const { error } = await authClient.signIn.email(value);
 
         if (error) {
           toast.error(error.message, { id: toastId });
           return;
         }
 
-        toast.success("User Logged in Successfully", { id: toastId });
-      } catch (err) {
-        toast.error("Something went wrong, please try again.", { id: toastId });
+        toast.success("Logged in successfully!", { id: toastId });
+        router.push("/");
+      } catch {
+        toast.error("Something went wrong.", { id: toastId });
       }
     },
   });
 
+  const isLoading = form.state.isSubmitting;
+
   return (
     <Card {...props}>
       <CardHeader>
-        <div className="flex items-center justify-center w-full">
-          <div className="pb-4">
-            <NavLogo />
-          </div>
+        <div className="flex justify-center pb-4">
+          <NavLogo />
         </div>
         <CardTitle className="text-center">Login to your account</CardTitle>
         <CardDescription className="text-center">
-          Enter your email below to login to your account
+          Enter your email and password below
         </CardDescription>
       </CardHeader>
+
       <CardContent>
         <form
           id="login-form"
@@ -87,71 +88,73 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
         >
           <FieldGroup>
             <form.Field name="email">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                return (
-                  <Field>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                    <Input
-                      type="email"
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
+              {(field) => (
+                <Field>
+                  <FieldLabel>Email</FieldLabel>
+                  <Input
+                    type="email"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                  <FieldError errors={field.state.meta.errors} />
+                </Field>
+              )}
             </form.Field>
+
             <form.Field name="password">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                return (
-                  <Field>
-                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+              {(field) => (
+                <Field>
+                  <FieldLabel>Password</FieldLabel>
+                  <div className="relative">
                     <Input
-                      type="password"
-                      id={field.name}
-                      name={field.name}
+                      type={showPassword ? "text" : "password"}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((p) => !p)}
+                      className="absolute right-3 top-2.5 text-muted-foreground cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  <FieldError errors={field.state.meta.errors} />
+                </Field>
+              )}
             </form.Field>
           </FieldGroup>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col gap-5 justify-end">
-        <Button form="login-form" type="submit" className="w-full">
+
+      <CardFooter className="flex flex-col gap-4">
+        <Button
+          form="login-form"
+          type="submit"
+          className="w-full cursor-pointer"
+          disabled={isLoading}
+        >
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Login
         </Button>
-        <Button
-          onClick={() => handleGoogleLogin()}
-          variant="outline"
-          type="button"
-          className="w-full"
-        >
-          Continue with Google
-        </Button>
+
+        <SignInWithGoogleButton
+          text="Log In With Google"
+        />
+
         <FieldDescription className="text-center">
           Don&apos;t have an account? <Link href="/signup">Sign up</Link>
         </FieldDescription>
       </CardFooter>
-      <div className="flex justify-center items-center">
-        <Link href={"/"} className="flex justify-center items-center mt-12 cursor-pointer">
-          <Button className="cursor-pointer">Go to Homepage</Button>
+
+      <div className="flex justify-center mt-6">
+        <Link href="/">
+          <Button variant="ghost" className="gap-2">
+            <Home size={16} />
+            Go to Homepage
+          </Button>
         </Link>
       </div>
-    </Card >
+    </Card>
   );
 }

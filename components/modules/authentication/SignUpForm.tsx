@@ -23,153 +23,160 @@ import { useForm } from "@tanstack/react-form";
 import Link from "next/link";
 import { toast } from "sonner";
 import * as z from "zod";
+import SignInWithGoogleButton from "./components/SignInWithGoogleButton";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Home, Loader2 } from "lucide-react";
+import { useState } from "react";
 
-const formSchema = z.object({
-  name: z.string().min(1, "This field is required"),
-  password: z.string().min(8, "Minimum length is 8"),
-  email: z.email(),
-});
+const formSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    email: z.email(),
+    password: z.string().min(8, "Minimum length is 8"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
 
-export function SignUpForm({ ...props }: React.ComponentProps<typeof Card>) {
-  const handleGoogleLogin = async () => {
-    const data = authClient.signIn.social({
-      provider: "google",
-      callbackURL: process.env.NEXT_PUBLIC_APP_URL,
-    });
-
-    console.log(data);
-  };
+export function SignUpForm(props: React.ComponentProps<typeof Card>) {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm({
     defaultValues: {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
     validators: {
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      const toastId = toast.loading("Creating user");
+      const toastId = toast.loading("Creating account...");
+
       try {
-        const { data, error } = await authClient.signUp.email(value);
+        const { error } = await authClient.signUp.email({
+          name: value.name,
+          email: value.email,
+          password: value.password,
+        });
 
         if (error) {
           toast.error(error.message, { id: toastId });
           return;
         }
 
-        toast.success("User Created Successfully", { id: toastId });
-      } catch (err) {
-        toast.error("Something went wrong, please try again.", { id: toastId });
+        toast.success("Account created successfully!", { id: toastId });
+        router.push("/login");
+      } catch {
+        toast.error("Something went wrong.", { id: toastId });
       }
     },
   });
 
+  const isLoading = form.state.isSubmitting;
+
   return (
     <Card {...props}>
       <CardHeader>
-        <div className="flex items-center justify-center w-full">
-          <div className="py-4">
-            <NavLogo />
-          </div>
+        <div className="flex justify-center py-4">
+          <NavLogo />
         </div>
         <CardTitle className="text-center">Create an account</CardTitle>
         <CardDescription className="text-center">
-          Enter your information below to create your account
+          Enter your details below
         </CardDescription>
       </CardHeader>
+
       <CardContent>
         <form
-          id="login-form"
+          id="signup-form"
           onSubmit={(e) => {
             e.preventDefault();
             form.handleSubmit();
           }}
         >
           <FieldGroup>
-            <form.Field name="name">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Name</FieldLabel>
-                    <Input
-                      type="text"
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name="email">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                return (
+            {(["name", "email"] as const).map((name) => (
+              <form.Field key={name} name={name}>
+                {(field) => (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                    <FieldLabel>{name === "name" ? "Name" : "Email"}</FieldLabel>
                     <Input
-                      type="email"
-                      id={field.name}
-                      name={field.name}
+                      type={name === "email" ? "email" : "text"}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
+                    <FieldError errors={field.state.meta.errors} />
                   </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name="password">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                return (
+                )}
+              </form.Field>
+            ))}
+
+            {(["password", "confirmPassword"] as const).map((name) => (
+              <form.Field key={name} name={name}>
+                {(field) => (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                    <Input
-                      type="password"
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
+                    <FieldLabel>
+                      {name === "password" ? "Password" : "Confirm Password"}
+                    </FieldLabel>
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((p) => !p)}
+                        className="absolute right-3 top-2.5 text-muted-foreground cursor-pointer"
+                      >
+                        {showPassword ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
+                      </button>
+                    </div>
+                    <FieldError errors={field.state.meta.errors} />
                   </Field>
-                );
-              }}
-            </form.Field>
+                )}
+              </form.Field>
+            ))}
           </FieldGroup>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col gap-5 justify-end">
-        <Button form="login-form" type="submit" className="w-full">
+
+      <CardFooter className="flex flex-col gap-4">
+        <Button
+          form="signup-form"
+          type="submit"
+          className="w-full cursor-pointer"
+          disabled={isLoading}
+        >
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Register
         </Button>
-        <Button
-          onClick={() => handleGoogleLogin()}
-          variant="outline"
-          type="button"
-          className="w-full"
-        >
-          Continue with Google
-        </Button>
+
+        <SignInWithGoogleButton
+          text="Sign Up With Google"
+        />
+
         <FieldDescription className="text-center">
-          Already have an account? <Link href="/login">Log In</Link>
+          Already have an account? <Link href="/login">Log in</Link>
         </FieldDescription>
       </CardFooter>
+      <div className="flex justify-center mt-6">
+        <Link href="/">
+          <Button variant="ghost" className="gap-2">
+            <Home size={16} />
+            Go to Homepage
+          </Button>
+        </Link>
+      </div>
     </Card>
   );
 }
