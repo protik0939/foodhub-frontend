@@ -15,7 +15,7 @@ import { authClient } from "@/lib/auth-client"
 
 export function NavAvatar() {
     const { data: session, isPending } = authClient.useSession()
-
+    
     const handleLogout = async () => {
         await authClient.signOut()
     }

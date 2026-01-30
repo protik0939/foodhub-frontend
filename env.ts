@@ -5,6 +5,7 @@ export const env = createEnv({
   server: {
     APP_URL: z.url(),
     BETTER_AUTH_SECRET: z.string(),
+    BETTER_AUTH_URL: z.url(),
   },
 
   client: {
@@ -16,6 +17,7 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
     APP_URL: process.env.APP_URL,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL
   },
 });
