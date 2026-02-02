@@ -1,7 +1,7 @@
-import AdminPage from '@/components/modules/homepage/admin/AdminPage';
 import CustomerPage from '@/components/modules/homepage/customer/CustomerPage';
 import ProviderPage from '@/components/modules/homepage/provider/ProviderPage';
 import { userService } from '@/services/user.service';
+import { redirect } from 'next/navigation';
 
 
 
@@ -12,7 +12,7 @@ export default async function page() {
   const condition = session?.data?.user?.role;
 
   if (condition == "ADMIN") {
-    return <AdminPage />
+    return redirect("/admin");
   }
 
   if (condition == "PROVIDER") {

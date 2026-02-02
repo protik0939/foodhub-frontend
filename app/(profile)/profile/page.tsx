@@ -1,9 +1,8 @@
 import { userService } from '@/services/user.service';
 import { redirect } from 'next/navigation';
-import React from 'react';
 import CustomerProfile from '@/components/modules/profile/CustomerProfile';
-import AdminProfile from '@/components/modules/profile/AdminProfile';
 import ProviderProfile from '@/components/modules/profile/ProviderProfile';
+import AdminProfile from '@/components/modules/profile/AdminProfile';
 
 export default async function page() {
     const session = await userService.getSession();
@@ -22,7 +21,7 @@ export default async function page() {
     if (role === "CUSTOMER") {
         return <CustomerProfile session={session.data} profile={userProfile} />;
     } else if (role === "ADMIN") {
-        return <AdminProfile session={session.data} profile={adminProfile} />;
+        return <AdminProfile  session={session.data} profile={adminProfile}/>;
     } else if (role === "PROVIDER") {
         return <ProviderProfile session={session.data} profile={providerProfile} />;
     }

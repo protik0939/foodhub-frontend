@@ -35,7 +35,7 @@ export default function VerifyEmailPage() {
     const verifyEmail = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/auth/verify-email?token=${token}&callbackURL=${callbackURL}`,
+          `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/verify-email?token=${token}&callbackURL=${callbackURL}`,
           {
             method: "GET",
             credentials: "include",

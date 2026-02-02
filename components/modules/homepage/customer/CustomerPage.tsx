@@ -12,8 +12,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Image from "next/image";
-import { Search, ShoppingCart, Clock, CheckCircle, XCircle, Package, MapPin, Phone, Store, TrendingUp, Sparkles } from "lucide-react";
+import { Search, ShoppingCart, Clock, CheckCircle, XCircle, Package, MapPin, Phone, Store, TrendingUp, Sparkles, CreditCard, Wallet, Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { userProfileService } from "@/services/user.client.service";
 
@@ -29,6 +32,10 @@ export default function CustomerPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showProfileAlert, setShowProfileAlert] = useState(false);
   const [orderingMealId, setOrderingMealId] = useState<string | null>(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"CASHONDELIVERY" | "OTHERS">("CASHONDELIVERY");
+  const [orderQuantity, setOrderQuantity] = useState(1);
   const { data: session } = authClient.useSession();
   const router = useRouter();
 
@@ -91,7 +98,7 @@ export default function CustomerPage() {
     setFilteredMeals(filtered);
   };
 
-  const handleOrder = async (mealId: string) => {
+  const handleOrder = (mealId: string) => {
     if (!session?.user) {
       toast.error("Please login to order");
       return;
@@ -102,17 +109,43 @@ export default function CustomerPage() {
       return;
     }
 
-    setOrderingMealId(mealId);
+    const meal = meals.find(m => m.id === mealId);
+    if (meal) {
+      setSelectedMeal(meal);
+      setOrderQuantity(1);
+      setShowOrderModal(true);
+    }
+  };
+
+  const confirmOrder = async () => {
+    if (!selectedMeal || !session?.user) return;
+
+    setOrderingMealId(selectedMeal.id);
     try {
-      const orderData = { mealId, userId: session.user.id };
+      const orderData = { 
+        mealId: selectedMeal.id, 
+        userId: session.user.id,
+        paymentMethod,
+        quantity: orderQuantity
+      };
       await mealService.createOrder(orderData);
       toast.success("Order placed successfully!");
       loadOrders(session.user.id);
+      setShowOrderModal(false);
+      setSelectedMeal(null);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to place order");
     } finally {
       setOrderingMealId(null);
     }
+  };
+
+  const incrementQuantity = () => {
+    setOrderQuantity(prev => prev + 1);
+  };
+
+  const decrementQuantity = () => {
+    setOrderQuantity(prev => prev > 1 ? prev - 1 : 1);
   };
 
   const getRecentMeals = () => {
@@ -481,6 +514,155 @@ export default function CustomerPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={showOrderModal} onOpenChange={setShowOrderModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Confirm Your Order</DialogTitle>
+            <DialogDescription>
+              Review your order details before confirming
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedMeal && (
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0">
+                  <Image
+                    src={selectedMeal.imageUrl}
+                    alt={selectedMeal.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg mb-1">{selectedMeal.name}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {selectedMeal.description}
+                  </p>
+                  {selectedMeal.provider && (
+                    <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                      <Store className="w-3 h-3" />
+                      {selectedMeal.provider.providerName}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-base font-semibold mb-3 block">Order Quantity</Label>
+                  <div className="flex items-center gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={decrementQuantity}
+                      disabled={orderQuantity <= 1}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <div className="w-16 h-10 flex items-center justify-center border rounded-md">
+                      <span className="text-lg font-semibold">{orderQuantity}</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={incrementQuantity}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Price per item</span>
+                    <span className="font-medium">${selectedMeal.price.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Quantity</span>
+                    <span className="font-medium">{orderQuantity}</span>
+                  </div>
+                  <div className="border-t pt-2 mt-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">Total</span>
+                      <span className="text-xl font-bold text-orange-500">
+                        ${(selectedMeal.price * orderQuantity).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Delivery Information</Label>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 mt-0.5 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">Address</div>
+                      <div className="text-muted-foreground">{userProfile?.address}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Phone className="w-4 h-4 mt-0.5 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">Contact</div>
+                      <div className="text-muted-foreground">{userProfile?.contactNo}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Payment Method</Label>
+                <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "CASHONDELIVERY" | "OTHERS")}>
+                  <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                    <RadioGroupItem value="CASHONDELIVERY" id="cash" />
+                    <Label htmlFor="cash" className="flex items-center gap-2 flex-1 cursor-pointer">
+                      <Wallet className="w-5 h-5 text-green-600" />
+                      <div>
+                        <div className="font-medium">Cash on Delivery</div>
+                        <div className="text-xs text-muted-foreground">Pay when your order arrives</div>
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="relative flex items-center space-x-3 p-3 border rounded-lg opacity-50 cursor-not-allowed">
+                    <RadioGroupItem value="OTHERS" id="others" disabled />
+                    <Label htmlFor="others" className="flex items-center gap-2 flex-1">
+                      <CreditCard className="w-5 h-5 text-blue-600" />
+                      <div>
+                        <div className="font-medium">Online Payment</div>
+                        <div className="text-xs text-muted-foreground">Credit/Debit Card, Digital Wallets</div>
+                      </div>
+                    </Label>
+                    <Badge variant="secondary" className="absolute right-3 top-3">Coming Soon</Badge>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowOrderModal(false)}
+              disabled={orderingMealId !== null}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmOrder}
+              disabled={orderingMealId !== null}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              {orderingMealId ? "Placing Order..." : "Confirm Order"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -35,6 +35,8 @@ export interface CreateMealData {
 export interface Order {
   id: string;
   status: "PREPARING" | "READY" | "DELIVERED" | "CANCELLED";
+  quantity: number;
+  paymentMethod: "CASHONDELIVERY" | "OTHERS";
   userId: string;
   mealId: string;
   user?: {
@@ -49,5 +51,11 @@ export interface Order {
     name: string;
     price: number;
     imageUrl: string;
+    provider?: {
+      user: {
+        name: string;
+        image: string;
+      };
+    };
   };
 }
