@@ -7,9 +7,9 @@ export interface TSession {
   id: string;
   userId: string;
   token: string;
-  expiresAt: string;   // ISO string
-  createdAt: string;   // ISO string
-  updatedAt: string;   // ISO string
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
   ipAddress: string;
   userAgent: string;
 }
@@ -29,3 +29,31 @@ export interface TUser {
 export type TUserRole = "CUSTOMER" | "PROVIDER" | "ADMIN" | "NONE";
 
 export type TAccountStatus = "ACTIVE" | "SUSPENDED";
+
+export interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: string;  // ISO string
+  address?: string;
+  contactNo?: string;
+  userId: string;
+}
+
+export interface ProviderProfile {
+  id: string;
+  providerName: string;
+  providerEmail: string;
+  providerContact: string;
+  providerAddress: string;
+  ownerName: string;
+  ownerEmail: string;
+  userId: string;
+}
+
+export interface AdminProfile {
+  id: string;
+  name: string;
+  contact: string;
+  userId: string;
+}

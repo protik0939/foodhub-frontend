@@ -11,6 +11,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_BETTER_AUTH_URL: z.url(),
     NEXT_PUBLIC_APP_URL: z.url(),
+    NEXT_PUBLIC_IMGBB_API_KEY: z.string().optional(),
   },
 
   runtimeEnv: {
@@ -18,6 +19,7 @@ export const env = createEnv({
     NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
     APP_URL: process.env.APP_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    NEXT_PUBLIC_IMGBB_API_KEY: process.env.NEXT_PUBLIC_IMGBB_API_KEY,
   },
 });

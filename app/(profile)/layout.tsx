@@ -1,4 +1,3 @@
-import NavbarSection from "@/components/Navbar";
 import { userService } from "@/services/user.service";
 import { redirect } from "next/navigation";
 export default async function CommonLayout({
@@ -16,7 +15,6 @@ export default async function CommonLayout({
 
   return (
     <div>
-      <NavbarSection/>
       {children}
     </div>
   );

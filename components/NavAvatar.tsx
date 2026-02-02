@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -12,12 +11,16 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { authClient } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export function NavAvatar() {
     const { data: session, isPending } = authClient.useSession()
+    const router = useRouter();
     
     const handleLogout = async () => {
         await authClient.signOut()
+        router.push("/login");
     }
 
     if (isPending) return null
@@ -39,24 +42,16 @@ export function NavAvatar() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full cursor-pointer">
-                    <Avatar>
-                        <AvatarImage
-                            src={session.user?.image || "/images/dummy-avatar.jpg"}
-                            alt="Profile Photo"
-                        />
-                        <AvatarFallback>
-                            {session.user?.name?.[0]?.toUpperCase() ?? "U"}
-                        </AvatarFallback>
-                    </Avatar>
+                    <Image src={session.user?.image ? session.user?.image : "/images/dummy-avatar.jpg"} alt={session.user?.name} height={40} width={40} className="w-10 h-10 rounded-full aspect-square"/>
                 </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent className="w-36">
                 <DropdownMenuGroup>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="cursor-pointer">
                         <Link href="/profile">Profile</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="cursor-pointer">
                         <Link href="/settings">Settings</Link>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -65,7 +60,7 @@ export function NavAvatar() {
 
                 <DropdownMenuItem
                     onClick={handleLogout}
-                    className="text-red-600 focus:text-red-600"
+                    className="text-red-600 focus:text-red-600 cursor-pointer"
                 >
                     Log out
                 </DropdownMenuItem>

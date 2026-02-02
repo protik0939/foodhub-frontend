@@ -5,7 +5,6 @@ export const userService = {
     try {
       const cookieStore = await cookies();
 
-      console.log(cookieStore.toString());
 
       const res = await fetch(
         `${process.env.BETTER_AUTH_URL}/api/auth/get-session`,
