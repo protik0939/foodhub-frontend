@@ -2,7 +2,8 @@ import AdminPage from '@/components/modules/homepage/admin/AdminPage';
 import CustomerPage from '@/components/modules/homepage/customer/CustomerPage';
 import ProviderPage from '@/components/modules/homepage/provider/ProviderPage';
 import { userService } from '@/services/user.service';
-import React from 'react'
+
+
 
 export default async function page() {
 
@@ -15,7 +16,8 @@ export default async function page() {
   }
 
   if (condition == "PROVIDER") {
-    return <ProviderPage />
+    const userId = session?.data?.user?.id;
+    return <ProviderPage providerId={userId} />
   }
 
   return (

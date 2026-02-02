@@ -4,8 +4,6 @@ export const userService = {
   getSession: async function () {
     try {
       const cookieStore = await cookies();
-
-
       const res = await fetch(
         `${process.env.BETTER_AUTH_URL}/api/auth/get-session`,
         {
@@ -28,4 +26,6 @@ export const userService = {
       return { data: null, error: { message: "Something Went Wrong" } };
     }
   },
+
+
 };
