@@ -14,6 +14,10 @@ export default async function CommonLayout({
     return redirect("/select-role");
   }
 
+  if(session?.data?.user?.accountStatus === "SUSPENDED"){
+    return redirect("/account-suspended");
+  }
+
   return (
     <div>
       <NavbarSection/>

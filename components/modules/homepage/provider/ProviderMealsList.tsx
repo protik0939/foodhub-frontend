@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import { Edit, Trash2 } from "lucide-react";
 import MealEditDialog from "./MealEditDialog";
+import Image from "next/image";
 
 interface ProviderMealsListProps {
   providerId: string;
@@ -103,9 +104,11 @@ export default function ProviderMealsList({
         {meals.map((meal) => (
           <Card key={meal.id} className="overflow-hidden">
             <div className="aspect-video relative overflow-hidden">
-              <img
+              <Image
                 src={meal.imageUrl}
                 alt={meal.name}
+                height={200}
+                width={200}
                 className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
               />
             </div>
