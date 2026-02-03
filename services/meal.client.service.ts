@@ -91,6 +91,18 @@ export const mealClientService = {
     return response.json();
   },
 
+  getMealById: async function (mealId: string): Promise<Meal> {
+    const response = await fetch(`${API_URL}/meals/${mealId}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch meal");
+    }
+
+    return response.json();
+  },
+
   getOrdersByProviderId: async function (providerId: string): Promise<Order[]> {
     const response = await fetch(`${API_URL}/orders/provider/${providerId}`, {
       credentials: "include",
@@ -130,6 +142,54 @@ export const mealClientService = {
     if (!response.ok) {
       throw new Error("Failed to delete meal");
     }
+  },
+
+  createOrder: async function (data: object): Promise<Order> {
+    const response = await fetch(`${API_URL}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to create order");
+    }
+
+    return response.json();
+  },
+
+  getOrdersByUserId: async function (userId: string): Promise<Order[]> {
+    const response = await fetch(`${API_URL}/orders/customer/${userId}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch orders");
+    }
+
+    return response.json();
+  },
+
+  updateOrderStatus: async function (orderId: string, status: string): Promise<Order> {
+    const response = await fetch(`${API_URL}/orders/${orderId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update order status");
+    }
+
+    return response.json();
   },
 
   createReview: async function (data: CreateReviewData): Promise<Review> {

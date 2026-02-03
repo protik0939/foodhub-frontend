@@ -6,8 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ModeToggle } from './ModeToggle';
 import NavLogo from './NavLogo';
-import { cookies } from 'next/headers';
-import { SessionResponse } from '@/types/user.type';
 import { NavAvatar } from './NavAvatar';
 import { userService } from '@/services/user.service';
 
@@ -27,60 +25,70 @@ const navItems = [
     title: 'Top Brands',
     href: '/topbrands',
   },
-  {
-    title: 'Cart',
-    href: '/cart',
-  },
 ];
 
 export default async function NavbarSection() {
+  const { data: session } = await userService.getSession();
+  const userRole = session?.user?.role;
+
+  if (userRole === 'ADMIN') {
+    return null;
+  }
+  const displayNavItems = session 
+    ? [...navItems, { title: 'Your Orders', href: '/your-orders' }]
+    : navItems;
+  const showNavItems = userRole !== 'PROVIDER';
 
   return (
     <nav className="mx-auto flex h-18 w-full max-w-7xl items-center gap-12 px-6 sm:px-4">
       <Link href="/" className="[&_svg]:fill-primary [&_svg]:text-primary inline-flex h-9 flex-1 items-center gap-2 text-2xl/none font-bold tracking-tight [&_svg]:size-7">
         <NavLogo />
       </Link>
-      <div className="hidden gap-3 lg:inline-flex">
-        {navItems.map((item) => (
-          <Button key={item.title} asChild variant={'ghost'}>
-            <Link href={item.href}>{item.title}</Link>
-          </Button>
-        ))}
-      </div>
+      {showNavItems && (
+        <div className="hidden gap-3 lg:inline-flex">
+          {displayNavItems.map((item) => (
+            <Button key={item.title} asChild variant={'ghost'}>
+              <Link href={item.href}>{item.title}</Link>
+            </Button>
+          ))}
+        </div>
+      )}
       <div className="hidden flex-1 justify-end gap-3 lg:inline-flex">
         <ModeToggle />
         <NavAvatar />
       </div>
-      <Sheet>
-        <SheetTrigger asChild className="ml-auto lg:hidden">
-          <Button variant="outline" size="icon" aria-label="Open Menu">
-            <Menu />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="flex w-[90%] max-w-sm flex-col px-6 py-6">
-          <SheetTitle>
-            <Link href="#" className="[&_svg]:fill-primary [&_svg]:text-primary inline-flex h-9 items-center gap-2 text-2xl/none font-bold tracking-tight [&_svg]:size-7">
-              <Image src={logoImage} alt='FoodHub' height={40} width={150} />
-            </Link>
-          </SheetTitle>
-          <nav className="-mx-4 my-6 flex flex-1 flex-col gap-2">
-            {navItems.map((item) => (
-              <Button key={item.title} asChild className="justify-start text-base" variant={'ghost'}>
-                <Link href={item.href}>{item.title}</Link>
+      {showNavItems && (
+        <Sheet>
+          <SheetTrigger asChild className="ml-auto lg:hidden">
+            <Button variant="outline" size="icon" aria-label="Open Menu">
+              <Menu />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="flex w-[90%] max-w-sm flex-col px-6 py-6">
+            <SheetTitle>
+              <Link href="#" className="[&_svg]:fill-primary [&_svg]:text-primary inline-flex h-9 items-center gap-2 text-2xl/none font-bold tracking-tight [&_svg]:size-7">
+                <Image src={logoImage} alt='FoodHub' height={40} width={150} />
+              </Link>
+            </SheetTitle>
+            <nav className="-mx-4 my-6 flex flex-1 flex-col gap-2">
+              {displayNavItems.map((item) => (
+                <Button key={item.title} asChild className="justify-start text-base" variant={'ghost'}>
+                  <Link href={item.href}>{item.title}</Link>
+                </Button>
+              ))}
+            </nav>
+            <div className="mt-auto grid gap-3">
+              <ModeToggle />
+              <Button variant={'outline'} asChild>
+                <Link href="#">Log in</Link>
               </Button>
-            ))}
-          </nav>
-          <div className="mt-auto grid gap-3">
-            <ModeToggle />
-            <Button variant={'outline'} asChild>
-              <Link href="#">Log in</Link>
-            </Button>
-            <Button asChild>
-              <Link href="#">Get Started</Link>
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+              <Button asChild>
+                <Link href="#">Get Started</Link>
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </nav>
   );
 }

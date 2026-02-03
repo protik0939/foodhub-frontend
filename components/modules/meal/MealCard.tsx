@@ -12,10 +12,9 @@ import { mealClientService } from "@/services/meal.client.service";
 interface MealCardProps {
     meal: Meal;
     onOrder: (mealId: string) => void;
-    orderingMealId: string | null;
 }
 
-export default function MealCard({ meal, onOrder, orderingMealId }: MealCardProps) {
+export default function MealCard({ meal, onOrder }: MealCardProps) {
     const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
 
 
@@ -80,9 +79,8 @@ export default function MealCard({ meal, onOrder, orderingMealId }: MealCardProp
                 <Button
                     className="w-full bg-orange-500 hover:bg-orange-600"
                     onClick={() => onOrder(meal.id)}
-                    disabled={orderingMealId === meal.id}
                 >
-                    {orderingMealId === meal.id ? "Ordering..." : "Order Now"}
+                    Order Now
                 </Button>
             </CardFooter>
         </Card>
