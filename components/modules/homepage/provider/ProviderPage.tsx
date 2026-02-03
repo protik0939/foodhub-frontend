@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MealUploadForm from "./MealUploadForm";
 import ProviderMealsList from "./ProviderMealsList";
 import ProviderOrdersView from "./ProviderOrdersView";
+import ProviderReviewsView from "./ProviderReviewsView";
 
 interface ProviderPageProps {
   providerId: string;
@@ -34,9 +35,10 @@ export default function ProviderPage({ providerId }: ProviderPageProps) {
           </div>
 
           <Tabs defaultValue="meals" className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsList className="grid w-full max-w-2xl grid-cols-3">
               <TabsTrigger value="meals">My Meals</TabsTrigger>
               <TabsTrigger value="orders">Customer Orders</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
             </TabsList>
 
             <TabsContent value="meals" className="mt-6">
@@ -48,6 +50,10 @@ export default function ProviderPage({ providerId }: ProviderPageProps) {
 
             <TabsContent value="orders" className="mt-6">
               <ProviderOrdersView providerId={providerId} />
+            </TabsContent>
+
+            <TabsContent value="reviews" className="mt-6">
+              <ProviderReviewsView providerId={providerId} />
             </TabsContent>
           </Tabs>
         </div>

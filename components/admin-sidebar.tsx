@@ -8,6 +8,7 @@ import {
   UtensilsCrossed,
   FolderOpen,
   User,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -58,6 +59,11 @@ const menuItems = [
     title: "Categories",
     url: "/admin/categories",
     icon: FolderOpen,
+  },
+  {
+    title: "Reviews",
+    url: "/admin/reviews",
+    icon: Star,
   },
 ];
 

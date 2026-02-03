@@ -1,4 +1,4 @@
-import { Category, CreateMealData, Meal, Order } from "@/types/meal.type";
+import { Category, CreateMealData, CreateReviewData, Meal, Order, Review, ReviewStats } from "@/types/meal.type";
 
 const API_URL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
 
@@ -18,7 +18,6 @@ export const mealService = {
     if (!response.ok) {
       throw new Error("Failed to upload image");
     }
-
     const data = await response.json();
     return data.data.url;
   },
@@ -171,6 +170,74 @@ export const mealService = {
 
     if (!response.ok) {
       throw new Error("Failed to update order status");
+    }
+
+    return response.json();
+  },
+
+  createReview: async function (data: CreateReviewData): Promise<Review> {
+    const response = await fetch(`${API_URL}/reviews`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.details?.message || "Failed to create review");
+    }
+
+    return response.json();
+  },
+
+  getReviewsByMealId: async function (mealId: string): Promise<Review[]> {
+    const response = await fetch(`${API_URL}/reviews/meal/${mealId}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch reviews");
+    }
+
+    return response.json();
+  },
+
+  getReviewStats: async function (mealId: string): Promise<ReviewStats> {
+    const response = await fetch(`${API_URL}/reviews/stats/${mealId}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch review stats");
+    }
+
+    return response.json();
+  },
+
+  getReviewsByProviderId: async function (providerId: string): Promise<Review[]> {
+    const response = await fetch(`${API_URL}/reviews/provider/${providerId}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch reviews");
+    }
+
+    return response.json();
+  },
+
+  getAllReviews: async function (): Promise<Review[]> {
+    const response = await fetch(`${API_URL}/reviews/all`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch reviews");
     }
 
     return response.json();

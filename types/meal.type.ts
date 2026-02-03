@@ -32,6 +32,39 @@ export interface CreateMealData {
   providerId: string;
 }
 
+export interface Review {
+  id: string;
+  reviewPoint: number;
+  comment?: string;
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  orderId: string;
+  order?: {
+    user: {
+      name: string;
+      email: string;
+      image?: string;
+    };
+    meal?: {
+      name: string;
+      imageUrl: string;
+    };
+  };
+}
+
+export interface CreateReviewData {
+  reviewPoint: number;
+  comment?: string;
+  imageUrl?: string;
+  orderId: string;
+}
+
+export interface ReviewStats {
+  totalReviews: number;
+  averageRating: number;
+}
+
 export interface Order {
   id: string;
   status: "PREPARING" | "READY" | "DELIVERED" | "CANCELLED";
@@ -39,6 +72,7 @@ export interface Order {
   paymentMethod: "CASHONDELIVERY" | "OTHERS";
   userId: string;
   mealId: string;
+  reviews?: Review[];
   user?: {
     name: string;
     email: string;

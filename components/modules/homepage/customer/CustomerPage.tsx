@@ -15,10 +15,19 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import Image from "next/image";
-import { Search, ShoppingCart, Clock, CheckCircle, XCircle, Package, MapPin, Phone, Store, TrendingUp, Sparkles, CreditCard, Wallet, Minus, Plus } from "lucide-react";
+import { Search, ShoppingCart, Clock, CheckCircle, XCircle, Package, MapPin, Phone, Store, TrendingUp, Sparkles, CreditCard, Wallet, Minus, Plus, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { userProfileService } from "@/services/user.client.service";
+import ReviewModal from "@/components/modules/review/ReviewModal";
+import MealCard from "@/components/modules/meal/MealCard";
 
 export default function CustomerPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -36,6 +45,8 @@ export default function CustomerPage() {
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"CASHONDELIVERY" | "OTHERS">("CASHONDELIVERY");
   const [orderQuantity, setOrderQuantity] = useState(1);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedOrderForReview, setSelectedOrderForReview] = useState<Order | null>(null);
   const { data: session } = authClient.useSession();
   const router = useRouter();
 
@@ -146,6 +157,17 @@ export default function CustomerPage() {
 
   const decrementQuantity = () => {
     setOrderQuantity(prev => prev > 1 ? prev - 1 : 1);
+  };
+
+  const handleReviewClick = (order: Order) => {
+    setSelectedOrderForReview(order);
+    setReviewModalOpen(true);
+  };
+
+  const handleReviewSubmitted = () => {
+    if (session?.user?.id) {
+      loadOrders(session.user.id);
+    }
   };
 
   const getRecentMeals = () => {
@@ -279,7 +301,7 @@ export default function CustomerPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold truncate">{order.meal?.name}</h3>
                           <div className="text-sm text-muted-foreground">
-                            ${order.meal?.price.toFixed(2)}
+                            ${order.meal?.price.toFixed(2)} × {order.quantity}
                           </div>
                           <div className="flex items-center gap-2 mt-2">
                             <Badge className={`${getOrderStatusColor(order.status)} text-white flex items-center gap-1`}>
@@ -287,6 +309,24 @@ export default function CustomerPage() {
                               <span className="text-xs">{order.status}</span>
                             </Badge>
                           </div>
+                          {order.status === "DELIVERED" && !order.reviews?.length && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="mt-2 w-full"
+                              onClick={() => handleReviewClick(order)}
+                            >
+                              <Star className="w-3 h-3 mr-1" />
+                              Write Review
+                            </Button>
+                          )}
+                          {order.reviews && order.reviews.length > 0 && (
+                            <div className="mt-2 flex items-center gap-1 text-sm">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              <span className="font-medium">{order.reviews[0].reviewPoint}.0</span>
+                              <span className="text-muted-foreground text-xs">Reviewed</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -329,54 +369,27 @@ export default function CustomerPage() {
               <TrendingUp className="w-6 h-6 text-orange-500" />
               <h2 className="text-2xl md:text-3xl font-bold">Recently Added</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recentMeals.map((meal) => (
-                <Card key={meal.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                  <CardHeader className="p-0">
-                    <div className="relative h-48 w-full overflow-hidden">
-                      <Image
-                        src={meal.imageUrl}
-                        alt={meal.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                      {meal.category && (
-                        <Badge className="absolute top-3 left-3 bg-orange-500">
-                          {meal.category.name}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <h3 className="font-bold text-lg mb-2 truncate">{meal.name}</h3>
-                    <div className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                      {meal.description}
-                    </div>
-                    {meal.provider && (
-                      <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                        <Store className="w-3 h-3" />
-                        {meal.provider.providerName}
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-orange-500">
-                        ${meal.price.toFixed(2)}
-                      </span>
-                      <span className="text-sm text-muted-foreground">{meal.quantity}</span>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="p-4 pt-0">
-                    <Button
-                      className="w-full bg-orange-500 hover:bg-orange-600"
-                      onClick={() => handleOrder(meal.id)}
-                      disabled={orderingMealId === meal.id}
-                    >
-                      {orderingMealId === meal.id ? "Ordering..." : "Order Now"}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {recentMeals.map((meal) => (
+                  <CarouselItem key={meal.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                    <MealCard 
+                      meal={meal} 
+                      onOrder={handleOrder} 
+                      orderingMealId={orderingMealId} 
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12" />
+              <CarouselNext className="hidden md:flex -right-4 lg:-right-12" />
+            </Carousel>
           </section>
         )}
 
@@ -386,23 +399,35 @@ export default function CustomerPage() {
               <Store className="w-6 h-6 text-orange-500" />
               <h2 className="text-2xl md:text-3xl font-bold">Popular Restaurants</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {providers.map((provider, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-linear-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-2xl font-bold">
-                        {provider.providerName?.charAt(0) || "R"}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-bold text-lg mb-1">{provider.providerName}</div>
-                        <div className="text-sm text-muted-foreground">{provider.providerEmail}</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {providers.map((provider, index) => (
+                  <CarouselItem key={index} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                    <Card className="hover:shadow-lg transition-shadow h-full">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-2xl font-bold shrink-0">
+                            {provider.providerName?.charAt(0) || "R"}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold text-lg mb-1 truncate">{provider.providerName}</div>
+                            <div className="text-sm text-muted-foreground truncate">{provider.providerEmail}</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12" />
+              <CarouselNext className="hidden md:flex -right-4 lg:-right-12" />
+            </Carousel>
           </section>
         )}
 
@@ -428,50 +453,12 @@ export default function CustomerPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredMeals.map((meal) => (
-                <Card key={meal.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                  <CardHeader className="p-0">
-                    <div className="relative h-48 w-full overflow-hidden">
-                      <Image
-                        src={meal.imageUrl}
-                        alt={meal.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                      {meal.category && (
-                        <Badge className="absolute top-3 left-3 bg-orange-500">
-                          {meal.category.name}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <h3 className="font-bold text-lg mb-2 truncate">{meal.name}</h3>
-                    <div className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                      {meal.description}
-                    </div>
-                    {meal.provider && (
-                      <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                        <Store className="w-3 h-3" />
-                        {meal.provider.providerName}
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-orange-500">
-                        ${meal.price.toFixed(2)}
-                      </span>
-                      <span className="text-sm text-muted-foreground">{meal.quantity}</span>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="p-4 pt-0">
-                    <Button
-                      className="w-full bg-orange-500 hover:bg-orange-600"
-                      onClick={() => handleOrder(meal.id)}
-                      disabled={orderingMealId === meal.id}
-                    >
-                      {orderingMealId === meal.id ? "Ordering..." : "Order Now"}
-                    </Button>
-                  </CardFooter>
-                </Card>
+                <MealCard 
+                  key={meal.id}
+                  meal={meal} 
+                  onOrder={handleOrder} 
+                  orderingMealId={orderingMealId} 
+                />
               ))}
             </div>
           )}
@@ -663,6 +650,17 @@ export default function CustomerPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {selectedOrderForReview && (
+        <ReviewModal
+          open={reviewModalOpen}
+          onOpenChange={setReviewModalOpen}
+          orderId={selectedOrderForReview.id}
+          mealName={selectedOrderForReview.meal?.name || ""}
+          mealImage={selectedOrderForReview.meal?.imageUrl || ""}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
+      )}
     </div>
   );
 }

@@ -63,12 +63,6 @@ export default function NotFound() {
             >
               Profile
             </Link>
-            <Link
-              href="/admin"
-              className="text-primary hover:underline flex items-center gap-1"
-            >
-              Admin Panel
-            </Link>
           </div>
         </div>
       </div>

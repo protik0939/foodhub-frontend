@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { mealClientService } from "@/services/meal.client.service";
-import { Meal } from "@/types/meal.type";
+import { Meal, ReviewStats } from "@/types/meal.type";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Star } from "lucide-react";
 import MealEditDialog from "./MealEditDialog";
 import Image from "next/image";
 
@@ -27,11 +27,15 @@ interface ProviderMealsListProps {
   refreshTrigger: number;
 }
 
+interface MealWithStats extends Meal {
+  reviewStats?: ReviewStats;
+}
+
 export default function ProviderMealsList({
   providerId,
   refreshTrigger,
 }: ProviderMealsListProps) {
-  const [meals, setMeals] = useState<Meal[]>([]);
+  const [meals, setMeals] = useState<MealWithStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [deletingMealId, setDeletingMealId] = useState<string | null>(null);
@@ -45,7 +49,17 @@ export default function ProviderMealsList({
     setIsLoading(true);
     try {
       const data = await mealClientService.getMealsByProviderId(providerId);
-      setMeals(data);
+      const mealsWithStats = await Promise.all(
+        data.map(async (meal) => {
+          try {
+            const stats = await mealClientService.getReviewStats(meal.id);
+            return { ...meal, reviewStats: stats };
+          } catch {
+            return meal;
+          }
+        })
+      );
+      setMeals(mealsWithStats);
     } catch (error) {
       toast.error("Failed to fetch meals");
     } finally {
@@ -127,10 +141,21 @@ export default function ProviderMealsList({
               <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                 {meal.description}
               </p>
-              <div className="flex items-center justify-between text-sm mb-4">
+              <div className="flex items-center justify-between text-sm mb-2">
                 <span className="text-muted-foreground">Quantity:</span>
                 <span className="font-medium">{meal.quantity}</span>
               </div>
+              {meal.reviewStats && meal.reviewStats.totalReviews > 0 && (
+                <div className="flex items-center gap-1 mb-2">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-semibold text-sm">
+                    {meal.reviewStats.averageRating.toFixed(1)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({meal.reviewStats.totalReviews} review{meal.reviewStats.totalReviews !== 1 ? "s" : ""})
+                  </span>
+                </div>
+              )}
               <div className="flex gap-2">
                 <Button
                   variant="outline"

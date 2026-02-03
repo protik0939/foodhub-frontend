@@ -51,6 +51,30 @@ export interface ProviderProfile {
   userId: string;
 }
 
+export interface ProviderWithUser {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string;
+  role: TUserRole;
+  accountStatus: TAccountStatus;
+  createdAt: string;
+  updatedAt: string;
+  providerProfile: {
+    id: string;
+    providerName: string;
+    providerEmail: string;
+    providerContact: string;
+    providerAddress: string;
+    ownerName: string;
+    ownerEmail: string;
+    _count: {
+      meals: number;
+    };
+  };
+}
+
 export interface AdminProfile {
   id: string;
   name: string;
