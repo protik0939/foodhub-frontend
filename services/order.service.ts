@@ -26,4 +26,26 @@ export const orderService = {
       return { data: null, error: { message: "Something Went Wrong" } };
     }
   },
+
+  cancelOrder: async function (orderId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const res = await fetch(
+        `${process.env.BETTER_AUTH_URL}/orders/${orderId}/cancel`,
+        {
+          method: "PATCH",
+          credentials: "include",
+        },
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        return { success: false, error: errorData.error || "Failed to cancel order" };
+      }
+
+      return { success: true };
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: "Something went wrong" };
+    }
+  },
 };

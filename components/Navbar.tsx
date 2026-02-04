@@ -53,7 +53,7 @@ export default async function NavbarSection() {
           ))}
         </div>
       )}
-      <div className="hidden flex-1 justify-end gap-3 lg:inline-flex">
+      <div className="flex flex-1 justify-end gap-3">
         <ModeToggle />
         <NavAvatar />
       </div>
@@ -78,13 +78,16 @@ export default async function NavbarSection() {
               ))}
             </nav>
             <div className="mt-auto grid gap-3">
-              <ModeToggle />
-              <Button variant={'outline'} asChild>
-                <Link href="#">Log in</Link>
-              </Button>
-              <Button asChild>
-                <Link href="#">Get Started</Link>
-              </Button>
+              {!session && (
+                <>
+                  <Button variant={'outline'} asChild>
+                    <Link href="/login">Log in</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="signup">Sign Up</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </SheetContent>
         </Sheet>

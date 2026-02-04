@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Store, Mail, Phone, MapPin, ChefHat, User } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface TProvidersPageProps {
   readonly providers: ProviderWithUser[];
@@ -29,95 +31,100 @@ export default function TopBrands({ providers }: TProvidersPageProps) {
               .toUpperCase() || "PR";
 
           return (
-            <Card
-              key={provider.id}
-              className="hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-            >
-              <CardHeader className="pb-4">
-                <div className="flex items-start gap-4">
-                  <Avatar className="h-16 w-16 border-2 border-primary/20">
-                    <AvatarImage
-                      src={provider.image || ""}
-                      alt={provider.providerProfile?.providerName || ""}
-                    />
-                    <AvatarFallback className="text-lg font-semibold bg-primary/10">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
-                      <Store className="h-4 w-4 text-primary" />
-                      {provider.providerProfile?.providerName || "N/A"}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={
-                          provider.accountStatus === "ACTIVE"
-                            ? "default"
-                            : "destructive"
-                        }
-                        className="text-xs"
-                      >
-                        {provider.accountStatus}
-                      </Badge>
-                      {provider.emailVerified && (
-                        <Badge variant="outline" className="text-xs">
-                          Verified
+            <Link href={`/topbrands/${provider.id}`}
+                key={provider.id}
+                className="hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer">
+              <Card
+              >
+                <CardHeader className="pb-4">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-16 w-16 border-2 border-primary/20">
+                      <AvatarImage
+                        src={provider.image || ""}
+                        alt={provider.providerProfile?.providerName || ""}
+                      />
+                      <AvatarFallback className="text-lg font-semibold bg-primary/10">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                        <Store className="h-4 w-4 text-primary" />
+                        {provider.providerProfile?.providerName || "N/A"}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            provider.accountStatus === "ACTIVE"
+                              ? "default"
+                              : "destructive"
+                          }
+                          className="text-xs"
+                        >
+                          {provider.accountStatus}
                         </Badge>
-                      )}
+                        {provider.emailVerified && (
+                          <Badge variant="outline" className="text-xs">
+                            Verified
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardHeader>
+                </CardHeader>
 
-              <CardContent className="space-y-3">
-                <div className="flex items-start gap-2 text-sm">
-                  <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">
-                      {provider.providerProfile?.ownerName || "N/A"}
-                    </p>
-                    <p className="text-muted-foreground text-xs">Owner</p>
+                <CardContent className="space-y-3">
+                  <div className="flex items-start gap-2 text-sm">
+                    <User className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">
+                        {provider.providerProfile?.ownerName || "N/A"}
+                      </p>
+                      <p className="text-muted-foreground text-xs">Owner</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-muted-foreground truncate">
-                    {provider.providerProfile?.providerEmail || "N/A"}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-muted-foreground">
-                    {provider.providerProfile?.providerContact || "N/A"}
-                  </span>
-                </div>
-
-                <div className="flex items-start gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground line-clamp-2">
-                    {provider.providerProfile?.providerAddress || "N/A"}
-                  </span>
-                </div>
-
-                <div className="pt-3 border-t">
-                  <div className="flex items-center gap-2">
-                    <ChefHat className="h-4 w-4 text-primary" />
-                    <span className="font-semibold text-sm">
-                      {provider.providerProfile?._count?.meals || 0}
-                    </span>
-                    <span className="text-muted-foreground text-sm">
-                      {provider.providerProfile?._count?.meals === 1
-                        ? "Meal"
-                        : "Meals"}{" "}
-                      Available
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground truncate">
+                      {provider.providerProfile?.providerEmail || "N/A"}
                     </span>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground">
+                      {provider.providerProfile?.providerContact || "N/A"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-start gap-2 text-sm">
+                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground line-clamp-2">
+                      {provider.providerProfile?.providerAddress || "N/A"}
+                    </span>
+                  </div>
+
+                  <div className="pt-3 border-t">
+                    <div className="flex items-center gap-2">
+                      <ChefHat className="h-4 w-4 text-primary" />
+                      <span className="font-semibold text-sm">
+                        {provider.providerProfile?._count?.meals || 0}
+                      </span>
+                      <span className="text-muted-foreground text-sm">
+                        {provider.providerProfile?._count?.meals === 1
+                          ? "Meal"
+                          : "Meals"}{" "}
+                        Available
+                      </span>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t">
+                    <Button className="w-full cursor-pointer">Explore Their Meals</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           );
         })}
       </div>

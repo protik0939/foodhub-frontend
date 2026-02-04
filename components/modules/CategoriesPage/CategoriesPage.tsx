@@ -1,12 +1,14 @@
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Category } from '@/types/meal.type'
+import Link from 'next/link';
 import React from 'react'
 
 interface TCategoriesPageProps {
     categories: Category[];
 }
 
-export default function CategoriesPage({categories}: TCategoriesPageProps) {
+export default function CategoriesPage({ categories }: TCategoriesPageProps) {
 
 
     return (
@@ -15,14 +17,21 @@ export default function CategoriesPage({categories}: TCategoriesPageProps) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {categories.map((category) => (
-                    <Card key={category.id} className="hover:shadow-lg transition-shadow cursor-pointer group:">
-                        <CardContent className="p-4">
-                            <CardTitle className="text-xl mb-2 group-hover:text-amber-500">{category.name}</CardTitle>
-                            <CardDescription className="line-clamp-3">
-                                {category.description}
-                            </CardDescription>
-                        </CardContent>
-                    </Card>
+                    <Link href={`/categories/${category.id}`} key={category.id} className="hover:shadow-lg transition-shadow cursor-pointer group:">
+                        <Card>
+                            <CardContent className="p-4">
+                                <div className='flex items-center justify-between'>
+                                    <div>
+                                        <CardTitle className="text-xl mb-2 group-hover:text-amber-500">{category.name}</CardTitle>
+                                        <CardDescription className="line-clamp-3">
+                                            {category.description}
+                                        </CardDescription>
+                                    </div>
+                                    <Button className='cursor-pointer'>See More</Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
                 ))}
             </div>
         </div>

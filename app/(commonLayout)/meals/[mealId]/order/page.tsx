@@ -29,25 +29,21 @@ export default function OrderMealPage() {
   const [ordering, setOrdering] = useState(false);
   const { data: session } = authClient.useSession();
 
-  useEffect(() => {
-    if (!session?.user) {
-      router.push("/login");
-      return;
-    }
-    loadData();
-  }, [session, mealId]);
 
   const loadData = async () => {
     try {
+      console.log("meal khujtese!!!!");
       setLoading(true);
       const foundMeal = await mealClientService.getMealById(mealId);
-      
+
+      console.log(foundMeal);
+
       if (!foundMeal) {
         toast.error("Meal not found");
         router.push("/");
         return;
       }
-      
+
       setMeal(foundMeal);
 
       if (session?.user?.id) {
@@ -67,6 +63,10 @@ export default function OrderMealPage() {
     }
   };
 
+  useEffect(() => {
+    loadData();
+  }, [mealId, session?.user?.id]);
+
   const incrementQuantity = () => {
     setOrderQuantity(prev => prev + 1);
   };
@@ -76,7 +76,12 @@ export default function OrderMealPage() {
   };
 
   const handleConfirmOrder = async () => {
-    if (!meal || !session?.user) return;
+    if (!meal) return;
+
+    if (!session?.user) {
+      router.push("/login");
+      return;
+    }
 
     setOrdering(true);
     try {

@@ -1,3 +1,4 @@
+import { Footer } from "@/components/footer";
 import NavbarSection from "@/components/Navbar";
 import { userService } from "@/services/user.service";
 import { redirect } from "next/navigation";
@@ -6,22 +7,22 @@ export default async function CommonLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
+
   const session = await userService.getSession();
 
-  if(session?.data?.user?.role === "NONE")
-  {
+  if (session?.data?.user?.role === "NONE") {
     return redirect("/select-role");
   }
 
-  if(session?.data?.user?.accountStatus === "SUSPENDED"){
+  if (session?.data?.user?.accountStatus === "SUSPENDED") {
     return redirect("/account-suspended");
   }
 
   return (
     <div>
-      <NavbarSection/>
+      <NavbarSection />
       {children}
+      <Footer />
     </div>
   );
 }

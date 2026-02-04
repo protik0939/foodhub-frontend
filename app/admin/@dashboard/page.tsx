@@ -1,5 +1,6 @@
 "use client";
 
+import { ModeToggle } from "@/components/ModeToggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
@@ -69,7 +70,10 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           <p className="text-muted-foreground">Overview of FoodHub platform</p>
         </div>
-        <Button variant="destructive" onClick={handleLogout} className="cursor-pointer"><LogOutIcon/> Logout</Button>
+        <div className="space-x-2 flex">
+          <ModeToggle/>
+          <Button variant="destructive" onClick={handleLogout} className="cursor-pointer"><LogOutIcon /> Logout</Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">

@@ -8,16 +8,15 @@ import { Star, Store } from "lucide-react";
 import Image from "next/image";
 import { Meal, ReviewStats } from "@/types/meal.type";
 import { mealClientService } from "@/services/meal.client.service";
+import Link from "next/link";
 
 interface MealCardProps {
     meal: Meal;
     onOrder: (mealId: string) => void;
 }
 
-export default function MealCard({ meal, onOrder }: MealCardProps) {
+export default function MealCard({ meal }: MealCardProps) {
     const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
-
-
     useEffect(() => {
         const loadReviewStats = async () => {
             try {
@@ -76,12 +75,11 @@ export default function MealCard({ meal, onOrder }: MealCardProps) {
                 </div>
             </CardContent>
             <CardFooter className="p-4 pt-0">
-                <Button
-                    className="w-full bg-orange-500 hover:bg-orange-600"
-                    onClick={() => onOrder(meal.id)}
-                >
-                    Order Now
-                </Button>
+                <Link href={`/meals/${meal.id}/order`} >
+                    <Button className="w-full bg-orange-500 hover:bg-orange-600 cursor-pointer">
+                        Order Now
+                    </Button>
+                </Link>
             </CardFooter>
         </Card>
     );

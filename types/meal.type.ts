@@ -19,6 +19,11 @@ export interface Meal {
   provider?: {
     providerName: string;
     providerEmail: string;
+    user:{
+      name: string;
+      image: string;
+      id: string;
+    }
   };
 }
 

@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { userProfileService } from "@/services/user.client.service";
 import ReviewModal from "@/components/modules/review/ReviewModal";
 import MealCard from "@/components/modules/meal/MealCard";
+import Link from "next/link";
 
 export default function CustomerPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -140,12 +141,14 @@ export default function CustomerPage() {
 
   const getProviders = () => {
     const providerMap = new Map();
+    // console.log(meals);
     meals.forEach((meal) => {
       if (meal.provider && !providerMap.has(meal.providerId)) {
-        providerMap.set(meal.providerId, meal.provider);
+        providerMap.set(meal.providerId, [meal.provider.user.name, meal.provider.user.image, meal.provider.user.id]);
       }
     });
-    return Array.from(providerMap.values()).slice(0, 6);
+    console.log("This is providers: ", providerMap);
+    return Array.from(providerMap.values());
   };
 
   const getOrderStatusIcon = (status: string) => {
@@ -202,6 +205,7 @@ export default function CustomerPage() {
 
   const recentMeals = getRecentMeals();
   const providers = getProviders();
+  console.log(providers);
 
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-muted/20">
@@ -232,7 +236,102 @@ export default function CustomerPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-        {session?.user && orders.length > 0 && (
+
+        <section>
+          <div className="flex items-center gap-2 mb-6">
+            <Sparkles className="w-6 h-6 text-orange-500" />
+            <h2 className="text-2xl md:text-3xl font-bold">Browse by Category</h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant={selectedCategory === "all" ? "default" : "outline"}
+              onClick={() => setSelectedCategory("all")}
+              className={selectedCategory === "all" ? "bg-orange-500 hover:bg-orange-600 cursor-pointer" : "cursor-pointer"}
+            >
+              All Categories
+            </Button>
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category.id)}
+                className={selectedCategory === category.id ? "bg-orange-500 hover:bg-orange-600 cursor-pointer" : "cursor-pointer"}
+              >
+                {category.name}
+              </Button>
+            ))}
+          </div>
+        </section>
+
+        {recentMeals.length > 0 && selectedCategory === "all" && !searchTerm && (
+          <section>
+            <div className="flex items-center gap-2 mb-6">
+              <TrendingUp className="w-6 h-6 text-orange-500" />
+              <h2 className="text-2xl md:text-3xl font-bold">Recently Added</h2>
+            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {recentMeals.map((meal) => (
+                  <CarouselItem key={meal.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 ">
+                    <MealCard
+                      meal={meal}
+                      onOrder={handleOrder}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12" />
+              <CarouselNext className="hidden md:flex -right-4 lg:-right-12" />
+            </Carousel>
+          </section>
+        )}
+
+        {providers.length > 0 && selectedCategory === "all" && !searchTerm && (
+          <section>
+            <div className="flex items-center gap-2 mb-6">
+              <Store className="w-6 h-6 text-orange-500" />
+              <h2 className="text-2xl md:text-3xl font-bold">Popular Restaurants</h2>
+            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {providers.map((provider, index) => (
+                  <CarouselItem key={index} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 cursor-pointer">
+                    <Link href={`/topbrands/${provider[2]}`}>
+                      <Card className="hover:shadow-lg transition-shadow h-full">
+                        <CardContent className="p-6">
+                          <div className="flex items-center gap-4">
+                            <Image src={provider[1] ? provider[1] : "/images/dummy-avatar.jpg"} height={50} width={50} alt="" className="w-16 h-16 rounded-lg" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-lg mb-1 truncate">{provider[0]}</div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12" />
+              <CarouselNext className="hidden md:flex -right-4 lg:-right-12" />
+            </Carousel>
+          </section>
+        )}
+
+
+
+        {session?.user && selectedCategory === "all" && !searchTerm && orders.length > 0 && (
           <section>
             <div className="flex items-center gap-2 mb-6">
               <ShoppingCart className="w-6 h-6 text-orange-500" />
@@ -278,7 +377,7 @@ export default function CustomerPage() {
                               className="mt-2 w-full"
                               onClick={() => handleReviewClick(order)}
                             >
-                              <Star className="w-3 h-3 mr-1" />
+                              <Star className="w-3 h-3 mr-1 cursor-pointer" />
                               Write Review
                             </Button>
                           )}
@@ -299,98 +398,6 @@ export default function CustomerPage() {
           </section>
         )}
 
-        <section>
-          <div className="flex items-center gap-2 mb-6">
-            <Sparkles className="w-6 h-6 text-orange-500" />
-            <h2 className="text-2xl md:text-3xl font-bold">Browse by Category</h2>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant={selectedCategory === "all" ? "default" : "outline"}
-              onClick={() => setSelectedCategory("all")}
-              className={selectedCategory === "all" ? "bg-orange-500 hover:bg-orange-600" : ""}
-            >
-              All Categories
-            </Button>
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                onClick={() => setSelectedCategory(category.id)}
-                className={selectedCategory === category.id ? "bg-orange-500 hover:bg-orange-600" : ""}
-              >
-                {category.name}
-              </Button>
-            ))}
-          </div>
-        </section>
-
-        {recentMeals.length > 0 && selectedCategory === "all" && !searchTerm && (
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="w-6 h-6 text-orange-500" />
-              <h2 className="text-2xl md:text-3xl font-bold">Recently Added</h2>
-            </div>
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {recentMeals.map((meal) => (
-                  <CarouselItem key={meal.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-                    <MealCard
-                      meal={meal}
-                      onOrder={handleOrder}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12" />
-              <CarouselNext className="hidden md:flex -right-4 lg:-right-12" />
-            </Carousel>
-          </section>
-        )}
-
-        {providers.length > 0 && selectedCategory === "all" && !searchTerm && (
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <Store className="w-6 h-6 text-orange-500" />
-              <h2 className="text-2xl md:text-3xl font-bold">Popular Restaurants</h2>
-            </div>
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {providers.map((provider, index) => (
-                  <CarouselItem key={index} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-                    <Card className="hover:shadow-lg transition-shadow h-full">
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-2xl font-bold shrink-0">
-                            {provider.providerName?.charAt(0) || "R"}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-bold text-lg mb-1 truncate">{provider.providerName}</div>
-                            <div className="text-sm text-muted-foreground truncate">{provider.providerEmail}</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12" />
-              <CarouselNext className="hidden md:flex -right-4 lg:-right-12" />
-            </Carousel>
-          </section>
-        )}
 
         <section>
           <div className="flex items-center gap-2 mb-6">
@@ -423,6 +430,10 @@ export default function CustomerPage() {
             </div>
           )}
         </section>
+
+
+
+
       </div>
 
       <AlertDialog open={showProfileAlert} onOpenChange={setShowProfileAlert}>
