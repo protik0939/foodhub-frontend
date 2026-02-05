@@ -33,6 +33,7 @@ function VerifyEmailContent() {
     }
 
     const verifyEmail = async () => {
+      console.log(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/verify-email?token=${token}&callbackURL=${callbackURL}`)
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/verify-email?token=${token}&callbackURL=${callbackURL}`,
