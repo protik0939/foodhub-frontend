@@ -1,25 +1,40 @@
-// import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-// export async function proxy(request: NextRequest) {
-//   const pathname = request.nextUrl.pathname;
+export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
 
-//   // Skip middleware for verify-email route
-//   if (pathname.startsWith("/verify-email")) {
-//     return NextResponse.next();
-//   }
+  // Public routes that don't require authentication
+  const publicRoutes = [
+    "/login",
+    "/signup",
+    "/verify-email",
+    "/forgot-password",
+    "/reset-password",
+    
+  ];
 
-//   // Check for session token in cookies
-//   const sessionToken = request.cookies.get("better-auth.session_token");
+  // Skip authentication check for public routes, static files, and Next.js internals
+  if (
+    publicRoutes.some((route) => pathname.startsWith(route)) ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.includes(".")
+  ) {
+    return NextResponse.next();
+  }
 
-//   //* User is not authenticated at all
-//   if (!sessionToken) {
-//     return NextResponse.redirect(new URL("/login", request.url));
-//   }
+  // Check for session token in cookies
+  const sessionToken = request.cookies.get("better-auth.session_token");
 
-//   // Allow access if session exists
-//   return NextResponse.next();
-// }
+  //* User is not authenticated at all
+  if (!sessionToken) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
 
-// export const config = {
-//   matcher: ["/:path*"],
-// };
+  // Allow access if session exists
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/:path*"],
+};
