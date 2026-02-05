@@ -96,7 +96,7 @@ export default function CategoriesPage() {
 
   const handleCreate = async () => {
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/categories", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/categories`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
