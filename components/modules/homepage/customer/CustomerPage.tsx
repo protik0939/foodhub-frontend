@@ -27,6 +27,8 @@ import ReviewModal from "@/components/modules/review/ReviewModal";
 import MealCard from "@/components/modules/meal/MealCard";
 import Link from "next/link";
 
+const TopBannerImage = '/images/forHomepage.jpg'
+
 export default function CustomerPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -42,8 +44,6 @@ export default function CustomerPage() {
   const [selectedOrderForReview, setSelectedOrderForReview] = useState<Order | null>(null);
   const { data: session } = authClient.useSession();
   const router = useRouter();
-
-
 
 
   useEffect(() => {
@@ -209,14 +209,22 @@ export default function CustomerPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-background to-muted/20">
-      <div className="relative bg-[#EC8A33] text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+      <div className="relative text-white overflow-hidden">
+        <Image
+          src={TopBannerImage}
+          alt="Food banner"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B] via-[#0B0B0B50] to-transparent hidden dark:block" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:hidden" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 ">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight drop-shadow-lg">
               Delicious Food, Delivered Fast
             </h1>
-            <div className="text-lg md:text-xl mb-8 text-white/90 max-w-2xl mx-auto">
+            <div className="text-lg md:text-xl mb-8 text-white/90 max-w-2xl mx-auto drop-shadow-lg">
               Order from the best local restaurants and get your favorite meals delivered to your doorstep
             </div>
             <div className="max-w-2xl mx-auto">

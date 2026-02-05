@@ -164,7 +164,7 @@ export default function MealUploadForm({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
+        <Button className="gap-2 cursor-pointer">
           <Plus className="h-4 w-4" />
           Add New Meal
         </Button>
@@ -240,7 +240,7 @@ export default function MealUploadForm({
                 onOpenChange={setShowNewCategoryDialog}
               >
                 <DialogTrigger asChild>
-                  <Button type="button" variant="outline" size="sm">
+                  <Button className="cursor-pointer" type="button" variant="outline" size="sm">
                     <Plus className="h-3 w-3 mr-1" />
                     New Category
                   </Button>
@@ -273,7 +273,7 @@ export default function MealUploadForm({
                     <Button
                       type="button"
                       onClick={handleCreateCategory}
-                      className="w-full"
+                      className="w-full cursor-pointer"
                     >
                       Create Category
                     </Button>
@@ -304,7 +304,7 @@ export default function MealUploadForm({
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
+                  <SelectItem key={category.id} value={category.id} className="cursor-pointer">
                     {category.name}
                   </SelectItem>
                 ))}
@@ -316,6 +316,7 @@ export default function MealUploadForm({
             <Label htmlFor="image">Meal Image</Label>
             <Input
               id="image"
+              className="cursor-pointer"
               type="file"
               accept="image/*"
               onChange={handleImageChange}

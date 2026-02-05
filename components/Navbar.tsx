@@ -40,7 +40,7 @@ export default async function NavbarSection() {
   const showNavItems = userRole !== 'PROVIDER';
 
   return (
-    <nav className="mx-auto flex h-18 w-full max-w-7xl items-center gap-12 px-6 sm:px-4">
+    <nav className="mx-auto flex h-18 w-full max-w-7xl items-center gap-2 px-6 sm:px-4">
       <Link href="/" className="[&_svg]:fill-primary [&_svg]:text-primary inline-flex h-9 flex-1 items-center gap-2 text-2xl/none font-bold tracking-tight [&_svg]:size-7">
         <NavLogo />
       </Link>

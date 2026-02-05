@@ -5,7 +5,8 @@ import React from 'react'
 export default async function page() {
 
   const providers = await providerService.getAllProviders();
-
+  console.log(providers);
+  
   return (
     <TopBrands providers={providers} />
   )

@@ -145,7 +145,7 @@ export default function ProviderMealsList({
                 <span className="text-muted-foreground">Quantity:</span>
                 <span className="font-medium">{meal.quantity}</span>
               </div>
-              {meal.reviewStats && meal.reviewStats.totalReviews > 0 && (
+              {meal.reviewStats && meal.reviewStats.totalReviews > 0 ? (
                 <div className="flex items-center gap-1 mb-2">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-semibold text-sm">
@@ -154,6 +154,11 @@ export default function ProviderMealsList({
                   <span className="text-xs text-muted-foreground">
                     ({meal.reviewStats.totalReviews} review{meal.reviewStats.totalReviews !== 1 ? "s" : ""})
                   </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 mb-2">
+                  <Star className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">No Reviews Yet</span>
                 </div>
               )}
               <div className="flex gap-2">

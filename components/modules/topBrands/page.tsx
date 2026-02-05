@@ -41,7 +41,7 @@ export default function TopBrands({ providers }: TProvidersPageProps) {
                     <Avatar className="h-16 w-16 border-2 border-primary/20">
                       <AvatarImage
                         src={provider.image || ""}
-                        alt={provider.providerProfile?.providerName || ""}
+                        alt={provider.providerProfile?.providerName || provider.name}
                       />
                       <AvatarFallback className="text-lg font-semibold bg-primary/10">
                         {initials}
@@ -50,7 +50,7 @@ export default function TopBrands({ providers }: TProvidersPageProps) {
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
                         <Store className="h-4 w-4 text-primary" />
-                        {provider.providerProfile?.providerName || "N/A"}
+                        {provider.providerProfile?.providerName || provider.name || "N/A"}
                       </h3>
                       <div className="flex items-center gap-2">
                         <Badge
@@ -87,7 +87,7 @@ export default function TopBrands({ providers }: TProvidersPageProps) {
                   <div className="flex items-center gap-2 text-sm">
                     <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground truncate">
-                      {provider.providerProfile?.providerEmail || "N/A"}
+                      {provider.providerProfile?.providerEmail || provider.email || "N/A"}
                     </span>
                   </div>
 

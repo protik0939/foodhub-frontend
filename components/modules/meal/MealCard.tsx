@@ -58,7 +58,7 @@ export default function MealCard({ meal }: MealCardProps) {
                         {meal.provider.providerName}
                     </div>
                 )}
-                {reviewStats && reviewStats.totalReviews > 0 && (
+                {reviewStats && reviewStats.totalReviews > 0 ? (
                     <div className="flex items-center gap-1 mb-2">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="font-semibold text-sm">{reviewStats.averageRating.toFixed(1)}</span>
@@ -66,6 +66,8 @@ export default function MealCard({ meal }: MealCardProps) {
                             ({reviewStats.totalReviews} review{reviewStats.totalReviews !== 1 ? "s" : ""})
                         </span>
                     </div>
+                ) : (
+                    <div className="text-sm text-muted-foreground mb-2">No reviews yet</div>
                 )}
                 <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-orange-500">

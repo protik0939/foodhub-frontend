@@ -161,7 +161,7 @@ export default function YourOrdersPage() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        className="mt-3 w-full sm:w-auto"
+                        className="mt-3 w-full sm:w-auto cursor-pointer"
                         onClick={() => handleCancelOrder(order.id)}
                         disabled={cancellingOrderId === order.id}
                       >

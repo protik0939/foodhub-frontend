@@ -206,6 +206,7 @@ export default function ProviderOrdersView({
                       <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
+                          className="cursor-pointer"
                           size="sm"
                           onClick={() => viewOrderDetails(order)}
                         >
@@ -216,14 +217,14 @@ export default function ProviderOrdersView({
                           onValueChange={(value) => handleStatusChange(order.id, value)}
                           disabled={updatingOrderId === order.id}
                         >
-                          <SelectTrigger className="w-32.5">
+                          <SelectTrigger className="w-32.5 cursor-pointer">
                             <SelectValue placeholder="Change status" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="PREPARING">Preparing</SelectItem>
-                            <SelectItem value="READY">Ready</SelectItem>
-                            <SelectItem value="DELIVERED">Delivered</SelectItem>
-                            <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                            <SelectItem className="cursor-pointer" value="PREPARING">Preparing</SelectItem>
+                            <SelectItem className="cursor-pointer" value="READY">Ready</SelectItem>
+                            <SelectItem className="cursor-pointer" value="DELIVERED">Delivered</SelectItem>
+                            <SelectItem className="cursor-pointer" value="CANCELLED">Cancelled</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
