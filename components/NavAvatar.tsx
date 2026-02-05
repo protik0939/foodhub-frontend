@@ -26,13 +26,13 @@ export function NavAvatar() {
                         router.push("/login");
                     },
                     onError: (error) => {
-                        console.error("Logout failed:", error.error);
+                        console.log("Logout failed:", error.error);
                         router.push("/login");
                     },
                 },
             });
         } catch (error) {
-            console.error("Logout error:", error);
+            console.log("Logout error:", error);
             router.push("/login");
         }
     }

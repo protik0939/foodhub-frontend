@@ -38,13 +38,13 @@ export default function IdentitySelector({ userData }: {userData : TUser}) {
             router.push("/login");
           },
           onError: (ctx) => {
-            console.error("Logout failed:", ctx.error);
+            console.log("Logout failed:", ctx.error);
             router.push("/login");
           },
         },
       });
     } catch (error) {
-      console.error("Logout error:", error);
+      console.log("Logout error:", error);
       router.push("/login");
     }
   }

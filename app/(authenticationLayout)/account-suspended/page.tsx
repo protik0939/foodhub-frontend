@@ -34,7 +34,7 @@ export default function AccountSuspended() {
             await authClient.signOut();
             router.push("/login");
         } catch (error) {
-            console.error("Logout failed:", error);
+            console.log("Logout failed:", error);
         } finally {
             setIsLoading(false);
         }
