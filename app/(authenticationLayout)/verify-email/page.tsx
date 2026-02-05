@@ -17,7 +17,7 @@ function VerifyEmailContent() {
   const router = useRouter();
 
   const token = searchParams.get("token");
-  const callbackURL = process.env.PROD_APP_URL;
+  const callbackURL = process.env.NEXT_PUBLIC_PROD_APP_URL;
 
   const [status, setStatus] = useState<
     "loading" | "success" | "error"

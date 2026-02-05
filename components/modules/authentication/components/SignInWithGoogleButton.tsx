@@ -6,10 +6,8 @@ export default function SignInWithGoogleButton({ text }: { text: string }) {
 
     const handleGoogleLogin = async () => {
         const fallbackUrl =
-            process.env.NEXT_PUBLIC_APP_URL ||
-            process.env.APP_URL ||
-            (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
-            "http://localhost:3000";
+            process.env.NEXT_PUBLIC_PROD_APP_URL ||
+            process.env.APP_URL
         const callbackURL =
             typeof window === "undefined" ? fallbackUrl : window.location.origin;
 
