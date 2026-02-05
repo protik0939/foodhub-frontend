@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Loader2,
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 
 const timer = 5;
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -150,5 +150,27 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center px-4">
+          <div className="w-full max-w-md rounded-xl border bg-background p-6 text-center shadow-sm">
+            <div className="mb-4 flex justify-center">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+            <h1 className="text-xl font-semibold">Loading...</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Please wait...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

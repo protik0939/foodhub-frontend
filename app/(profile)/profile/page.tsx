@@ -4,6 +4,8 @@ import CustomerProfile from '@/components/modules/profile/CustomerProfile';
 import ProviderProfile from '@/components/modules/profile/ProviderProfile';
 import AdminProfile from '@/components/modules/profile/AdminProfile';
 
+export const dynamic = 'force-dynamic';
+
 export default async function page() {
     const session = await userService.getSession();
 

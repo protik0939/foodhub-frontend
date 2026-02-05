@@ -3,6 +3,8 @@ import { AppSidebar } from "@/components/admin-sidebar";
 import { userService } from "@/services/user.service";
 import { redirect } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({
   children,
   dashboard,
