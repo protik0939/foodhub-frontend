@@ -3,9 +3,14 @@ import { cookies } from "next/headers";
 export const userService = {
   getSession: async function () {
     try {
+      const appUrl =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.APP_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
+        "http://localhost:3000";
       const cookieStore = await cookies();
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/get-session`,
+        `${appUrl}/api/auth/get-session`,
         {
           headers: {
             Cookie: cookieStore.toString(),
