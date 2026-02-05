@@ -10,8 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { authClient } from "@/lib/auth-client";
-import { performLogout } from "@/lib/logout-helper";
+import { logoutEverywhere } from "@/lib/logout-helper";
 import { User, Utensils } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -32,7 +31,9 @@ export default function IdentitySelector({ userData }: {userData : TUser}) {
   };
 
   const handleLogout = async () => {
-    await performLogout(router);
+    await logoutEverywhere({
+      onAfter: () => router.push("/login"),
+    });
   }
 
   const handleConfirm = async () => {

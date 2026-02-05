@@ -1,51 +1,30 @@
-import { authClient } from "./auth-client";
+import { authClient } from "@/lib/auth-client";
 
-/**
- * Clear all browser cookies
- */
-export const clearAllCookies = () => {
-  document.cookie.split(";").forEach((cookie) => {
-    const cookieName = cookie.split("=")[0].trim();
-    // Clear for current path
-    document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
-    // Clear for root domain
-    document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=${window.location.hostname}`;
-    // Clear for all subdomains
-    const domainParts = window.location.hostname.split(".");
-    if (domainParts.length > 1) {
-      const rootDomain = domainParts.slice(-2).join(".");
-      document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=.${rootDomain}`;
-    }
-  });
+type LogoutOptions = {
+  onAfter?: () => void;
 };
 
-export const performLogout = async (
-  router: { push: (url: string) => void; refresh: () => void },
-  redirectPath: string = "/login"
-) => {
+  const BackendURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
+
+export async function logoutEverywhere(options?: LogoutOptions) {
+
   try {
-    // Sign out from backend
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          clearAllCookies();
-          router.refresh();
-          router.push(redirectPath);
-        },
-        onError: (error) => {
-          console.log("Backend logout failed:", error.error);
-          // Still clear cookies and redirect
-          clearAllCookies();
-          router.refresh();
-          router.push(redirectPath);
-        },
-      },
-    });
+    await authClient.signOut();
   } catch (error) {
     console.log("Logout error:", error);
-    // Fallback: clear cookies and redirect anyway
-    clearAllCookies();
-    router.refresh();
-    router.push(redirectPath);
   }
-};
+
+  // Best-effort cleanup for any old backend-domain cookies.
+  if (BackendURL) {
+    try {
+      await fetch(`${BackendURL}/api/auth/sign-out`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.log("Legacy backend logout failed:", error);
+    }
+  }
+
+  options?.onAfter?.();
+}

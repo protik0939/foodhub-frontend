@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { authClient } from "@/lib/auth-client"
-import { performLogout } from "@/lib/logout-helper"
+import { logoutEverywhere } from "@/lib/logout-helper"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 
@@ -20,7 +20,9 @@ export function NavAvatar() {
     const router = useRouter();
     
     const handleLogout = async () => {
-        await performLogout(router);
+        await logoutEverywhere({
+            onAfter: () => router.push("/login"),
+        });
     }
 
     if (isPending) return null
