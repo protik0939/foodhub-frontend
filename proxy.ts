@@ -10,7 +10,7 @@ export async function proxy(request: NextRequest) {
     "/verify-email",
     "/forgot-password",
     "/reset-password",
-    
+    "/account-suspended",
   ];
 
   // Skip authentication check for public routes, static files, and Next.js internals
@@ -18,21 +18,43 @@ export async function proxy(request: NextRequest) {
     publicRoutes.some((route) => pathname.startsWith(route)) ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
-    pathname.includes(".")
+    pathname.includes(".") ||
+    pathname === "/" || // Exact match for homepage only
+    pathname.startsWith("/topbrands") ||
+    pathname.startsWith("/categories") ||
+    pathname.startsWith("/meals") // If meal pages should be public
   ) {
     return NextResponse.next();
   }
 
-  // Check for session token in cookies
-  const sessionToken = request.cookies.get("better-auth.session_token");
+  // For cross-origin auth, check session via API call to backend
+  try {
+    const cookieHeader = request.headers.get("cookie") || "";
+    const sessionResponse = await fetch(
+      `${process.env.BETTER_AUTH_URL}/api/auth/get-session`,
+      {
+        headers: {
+          Cookie: cookieHeader,
+        },
+        credentials: "include",
+        cache: "no-store",
+      },
+    );
 
-  //* User is not authenticated at all
-  if (!sessionToken) {
+    const session = await sessionResponse.json();
+
+    // If no valid session, redirect to login
+    if (!session || session.error || !session.user) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    // Allow access if session exists
+    return NextResponse.next();
+  } catch (error) {
+    console.error("Session check failed:", error);
+    // On error, redirect to login for safety
     return NextResponse.redirect(new URL("/login", request.url));
   }
-
-  // Allow access if session exists
-  return NextResponse.next();
 }
 
 export const config = {

@@ -5,11 +5,12 @@ export const userService = {
     try {
       const cookieStore = await cookies();
       const res = await fetch(
-        `${process.env.BETTER_AUTH_URL}/api/auth/get-session`,
+        `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/get-session`,
         {
           headers: {
             Cookie: cookieStore.toString(),
           },
+          credentials: "include",
           cache: "no-store",
         },
       );
