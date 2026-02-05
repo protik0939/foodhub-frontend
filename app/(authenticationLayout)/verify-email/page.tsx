@@ -17,7 +17,7 @@ function VerifyEmailContent() {
   const router = useRouter();
 
   const token = searchParams.get("token");
-  const callbackURL = searchParams.get("callbackURL") || "/";
+  const callbackURL = process.env.PROD_APP_URL;
 
   const [status, setStatus] = useState<
     "loading" | "success" | "error"
@@ -35,7 +35,7 @@ function VerifyEmailContent() {
     const verifyEmail = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/auth/verify-email?token=${token}&callbackURL=${callbackURL}`,
+          `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/verify-email?token=${token}&callbackURL=${callbackURL}`,
           {
             method: "GET",
             credentials: "include",
