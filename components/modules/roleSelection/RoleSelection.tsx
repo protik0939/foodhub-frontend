@@ -31,8 +31,22 @@ export default function IdentitySelector({ userData }: {userData : TUser}) {
   };
 
   const handleLogout = async () => {
-    await authClient.signOut()
-    router.push("/login");
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/login");
+          },
+          onError: (ctx) => {
+            console.error("Logout failed:", ctx.error);
+            router.push("/login");
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      router.push("/login");
+    }
   }
 
   const handleConfirm = async () => {
