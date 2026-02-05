@@ -4,9 +4,14 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/"];
-
-  // Skip authentication check for public routes, static files, and Next.js internals
+  const publicRoutes = [
+    "/login",
+    "/signup",
+    "/verify-email",
+    "/forgot-password",
+    "/reset-password",
+    "/account-suspended",
+  ];
   if (
     publicRoutes.some((route) => pathname.startsWith(route)) ||
     pathname.startsWith("/_next") ||
