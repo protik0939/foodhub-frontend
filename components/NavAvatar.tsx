@@ -11,6 +11,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { authClient } from "@/lib/auth-client"
+import { performLogout } from "@/lib/logout-helper"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 
@@ -19,22 +20,7 @@ export function NavAvatar() {
     const router = useRouter();
     
     const handleLogout = async () => {
-        try {
-            await authClient.signOut({
-                fetchOptions: {
-                    onSuccess: () => {
-                        router.push("/login");
-                    },
-                    onError: (error) => {
-                        console.log("Logout failed:", error.error);
-                        router.push("/login");
-                    },
-                },
-            });
-        } catch (error) {
-            console.log("Logout error:", error);
-            router.push("/login");
-        }
+        await performLogout(router);
     }
 
     if (isPending) return null

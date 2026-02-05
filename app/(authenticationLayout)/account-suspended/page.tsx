@@ -4,6 +4,7 @@ import Image from "next/image";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import { performLogout } from "@/lib/logout-helper";
 import { useRouter } from "next/navigation";
 import { AlertCircle, LogOut, Mail, Shield } from "lucide-react";
 import {
@@ -31,10 +32,7 @@ export default function AccountSuspended() {
     const handleLogout = async () => {
         setIsLoading(true);
         try {
-            await authClient.signOut();
-            router.push("/login");
-        } catch (error) {
-            console.log("Logout failed:", error);
+            await performLogout(router);
         } finally {
             setIsLoading(false);
         }

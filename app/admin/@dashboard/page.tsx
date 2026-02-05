@@ -4,6 +4,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
+import { performLogout } from "@/lib/logout-helper";
 import { Users, Store, ShoppingCart, UtensilsCrossed, FolderOpen, LogOutIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -59,22 +60,7 @@ export default function AdminDashboard() {
 
 
   const handleLogout = async () => {
-    try {
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            router.push("/login");
-          },
-          onError: (error) => {
-            console.log("Logout failed:", error.error);
-            router.push("/login");
-          },
-        },
-      });
-    } catch (error) {
-      console.log("Logout error:", error);
-      router.push("/login");
-    }
+    await performLogout(router);
   }
 
   return (

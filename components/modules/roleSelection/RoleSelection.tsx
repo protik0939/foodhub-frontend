@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
+import { performLogout } from "@/lib/logout-helper";
 import { User, Utensils } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -31,22 +32,7 @@ export default function IdentitySelector({ userData }: {userData : TUser}) {
   };
 
   const handleLogout = async () => {
-    try {
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            router.push("/login");
-          },
-          onError: (ctx) => {
-            console.log("Logout failed:", ctx.error);
-            router.push("/login");
-          },
-        },
-      });
-    } catch (error) {
-      console.log("Logout error:", error);
-      router.push("/login");
-    }
+    await performLogout(router);
   }
 
   const handleConfirm = async () => {
