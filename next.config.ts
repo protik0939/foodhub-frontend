@@ -38,6 +38,10 @@ const nextConfig: NextConfig = {
         destination: `${backendURL}/orders/:path*`,
       },
       {
+        source: "/select-role",
+        destination: `${backendURL}/select-role`,
+      },
+      {
         source: "/profile/:path*",
         destination: `${backendURL}/profile/:path*`,
       },
