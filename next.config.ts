@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const backendURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "https://food-hub-backend-teal.vercel.app" || "http://localhost:5000";
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -17,27 +19,27 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/:path*`,
+        destination: `${backendURL}/api/:path*`,
       },
       {
         source: "/orders/:path*",
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/:path*`,
+        destination: `${backendURL}/orders/:path*`,
       },
       {
         source: "/profile/:path*",
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/:path*`,
+        destination: `${backendURL}/profile/:path*`,
       },
       {
         source: "/meals/:path*",
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/meals/:path*`,
+        destination: `${backendURL}/meals/:path*`,
       },
       {
         source: "/categories/:path*",
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/categories/:path*`,
+        destination: `${backendURL}/categories/:path*`,
       },
       {
         source: "/reviews/:path*",
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/reviews/:path*`,
+        destination: `${backendURL}/reviews/:path*`,
       },
     ];
   },
