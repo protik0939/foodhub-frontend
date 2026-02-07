@@ -55,7 +55,7 @@ export default function IdentitySelector({ userData }: {userData : TUser}) {
       if (!res.ok) throw new Error("Failed to update role");
       
       toast.success(`Role Selected Successfully!`);
-      globalThis.location.href = "/";
+      router.push("/");
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong");
