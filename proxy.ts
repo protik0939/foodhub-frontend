@@ -9,7 +9,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Check for session token in cookies
-  const sessionToken = request.cookies.get("better-auth.session_token");
+  const sessionToken = request.cookies.get("__Secure-better-auth.session_token");
 
   //* User is not authenticated at all
   if (!sessionToken) {

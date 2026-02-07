@@ -12,6 +12,7 @@ export default async function CommonLayout({
 }>) {
 
   const session = await userService.getSession();
+  console.log("1) ", session);
 
   if (session?.data?.user?.role === "NONE") {
     return redirect("/select-role");
