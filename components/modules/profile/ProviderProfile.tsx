@@ -38,7 +38,7 @@ export default function ProviderProfile({ session, profile }: ProviderProfilePro
             setIsLoading(true);
             try {
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/profile/providers/${session.user.id}`,
+                    `/profile/providers/${session.user.id}`,
                     {
                         method: "GET",
                         headers: {
@@ -83,7 +83,7 @@ export default function ProviderProfile({ session, profile }: ProviderProfilePro
         setIsSaving(true);
         try {
             const updateResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/profile/providers/${session.user.id}`,
+                `/profile/providers/${session.user.id}`,
                 {
                     method: "PUT",
                     headers: {
@@ -152,7 +152,7 @@ export default function ProviderProfile({ session, profile }: ProviderProfilePro
                 console.log(session.user.id);
                 try {
                     const updateResponse = await fetch(
-                        `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/profile/providers/${session.user.id}/image`,
+                        `/profile/providers/${session.user.id}/image`,
                         {
                             method: "PUT",
                             headers: {

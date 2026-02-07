@@ -34,7 +34,7 @@ export default function AdminProfile({ session, profile }: TAdminProfileProps) {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/profile/admins/${session.user.id}`,
+          `/profile/admins/${session.user.id}`,
           {
             method: "GET",
             headers: {
@@ -75,7 +75,7 @@ export default function AdminProfile({ session, profile }: TAdminProfileProps) {
     setIsSaving(true);
     try {
       const updateResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/profile/admins/${session.user.id}`,
+        `/profile/admins/${session.user.id}`,
         {
           method: "PUT",
           headers: {
@@ -140,7 +140,7 @@ export default function AdminProfile({ session, profile }: TAdminProfileProps) {
         setProfileImage(imageUrl);
         try {
           const updateResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/profile/admins/${session.user.id}/image`,
+            `/profile/admins/${session.user.id}/image`,
             {
               method: "PUT",
               headers: {

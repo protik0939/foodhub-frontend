@@ -37,7 +37,7 @@ export default function CustomerProfile({ session, profile }: CustomerProfilePro
       setIsLoading(true);
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/profile/customers/${session.user.id}`,
+          `/profile/customers/${session.user.id}`,
           {
             method: "GET",
             headers: {
@@ -87,7 +87,7 @@ export default function CustomerProfile({ session, profile }: CustomerProfilePro
           : formData.dateOfBirth,
       };
       const updateResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/profile/customers/${session.user.id}`,
+        `/profile/customers/${session.user.id}`,
         {
           method: "PUT",
           headers: {
@@ -154,7 +154,7 @@ export default function CustomerProfile({ session, profile }: CustomerProfilePro
 
         try {
           const updateResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/profile/customers/${session.user.id}/image`,
+            `/profile/customers/${session.user.id}/image`,
             {
               method: "PUT",
               headers: {

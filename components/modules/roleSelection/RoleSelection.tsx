@@ -40,11 +40,12 @@ export default function IdentitySelector({ userData }: {userData : TUser}) {
     if (!selected) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/select-role`, {
+      const res = await fetch(`/select-role`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           userId: userData.id,
           role: selected,
