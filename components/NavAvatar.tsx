@@ -29,7 +29,7 @@ export function NavAvatar() {
 
     if (!session) {
         return (
-            <div className="flex gap-2">
+            <div className="flex gap-2 hidden lg:block">
                 <Button asChild variant="ghost">
                     <Link href="/login">Log in</Link>
                 </Button>
