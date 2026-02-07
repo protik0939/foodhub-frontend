@@ -80,7 +80,7 @@ export default function ProvidersPage() {
         ...(search && { search }),
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/providers?${params}`, {
+      const response = await fetch(`/api/admin/providers?${params}`, {
         credentials: "include",
       });
       const data: PaginatedResponse = await response.json();
@@ -98,7 +98,7 @@ export default function ProvidersPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/users/${selectedProvider.id}/status`,
+        `/api/admin/users/${selectedProvider.id}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

@@ -97,7 +97,7 @@ export default function OrdersPage() {
         ...(search && { search }),
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/orders?${params}`, {
+      const response = await fetch(`/api/admin/orders?${params}`, {
         credentials: "include",
       });
       const data: PaginatedResponse = await response.json();
@@ -113,7 +113,7 @@ export default function OrdersPage() {
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingOrderId(orderId);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/orders/${orderId}/status`, {
+      const response = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -134,7 +134,7 @@ export default function OrdersPage() {
     if (!selectedOrder) return;
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/orders/${selectedOrder.id}`, {
+      const response = await fetch(`/api/admin/orders/${selectedOrder.id}`, {
         method: "DELETE",
         credentials: "include",
       });

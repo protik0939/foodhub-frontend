@@ -6,7 +6,7 @@ export default function SignInWithGoogleButton({ text }: { text: string }) {
 
     const handleGoogleLogin = async () => {
 
-        const callbackURL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
+        const callbackURL = typeof window !== "undefined" ? window.location.origin : "";
 
         const data = authClient.signIn.social({
             provider: "google",
