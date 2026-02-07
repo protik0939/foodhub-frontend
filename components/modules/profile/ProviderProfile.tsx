@@ -116,7 +116,7 @@ export default function ProviderProfile({ session, profile }: ProviderProfilePro
             ownerName: profile?.ownerName || "",
             ownerEmail: profile?.ownerEmail || "",
         });
-        setProfileImage(session.user.image || "");
+        setProfileImage(session.user.image || "/images/dummy-avatar.jpg");
         setIsEditing(false);
     };
 

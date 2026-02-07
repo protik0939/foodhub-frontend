@@ -144,7 +144,7 @@ export default function CustomerPage() {
     // console.log(meals);
     meals.forEach((meal) => {
       if (meal.provider && !providerMap.has(meal.providerId)) {
-        providerMap.set(meal.providerId, [meal.provider.user.name, meal.provider.user.image, meal.provider.user.id]);
+        providerMap.set(meal.providerId, [meal.provider.user.name, meal.provider.user.image, meal.provider.user.id, meal.provider.providerName]);
       }
     });
     console.log("This is providers: ", providerMap);
@@ -322,7 +322,7 @@ export default function CustomerPage() {
                           <div className="flex items-center gap-4">
                             <Image src={provider[1] ? provider[1] : "/images/dummy-avatar.jpg"} height={50} width={50} alt="" className="w-16 h-16 rounded-lg" />
                             <div className="flex-1 min-w-0">
-                              <div className="font-bold text-lg mb-1 truncate">{provider[0]}</div>
+                              <div className="font-bold text-lg mb-1 truncate">{provider[3] ? provider[3] : provider[1]}</div>
                             </div>
                           </div>
                         </CardContent>

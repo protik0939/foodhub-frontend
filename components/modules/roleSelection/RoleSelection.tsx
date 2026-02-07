@@ -52,14 +52,17 @@ export default function IdentitySelector({ userData }: {userData : TUser}) {
       });
 
       if (!res.ok) throw new Error("Failed to update role");
+      
       toast.success(`Role Selected Successfully!`);
-      router.push("/");
+      globalThis.location.href = "/";
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong");
     }
   };
 
+
+  console.log(userData.role);
 
   if (!userData) {
     router.push("/login");

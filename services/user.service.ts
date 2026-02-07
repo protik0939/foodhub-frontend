@@ -20,6 +20,17 @@ export const userService = {
         },
       );
 
+      if (!res.ok) {
+        console.error("Session fetch failed:", res.status, res.statusText);
+        return { data: null, error: { message: "Failed to fetch session" } };
+      }
+
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Non-JSON response received:", await res.text());
+        return { data: null, error: { message: "Invalid response format" } };
+      }
+
       const session = await res.json();
 
       if (session === null) {
@@ -28,7 +39,7 @@ export const userService = {
 
       return { data: session, error: null };
     } catch (err) {
-      console.error(err);
+      console.error("Session error:", err);
       return { data: null, error: { message: "Something Went Wrong" } };
     }
   },

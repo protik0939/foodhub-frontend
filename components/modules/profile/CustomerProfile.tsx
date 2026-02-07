@@ -27,7 +27,7 @@ export default function CustomerProfile({ session, profile }: CustomerProfilePro
     address: profile?.address || "",
     contactNo: profile?.contactNo || "",
   });
-  const [profileImage, setProfileImage] = useState(session.user.image || "");
+  const [profileImage, setProfileImage] = useState(session.user.image || "/images/dummy-avatar.jpg");
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -118,7 +118,7 @@ export default function CustomerProfile({ session, profile }: CustomerProfilePro
       address: profile?.address || "",
       contactNo: profile?.contactNo || "",
     });
-    setProfileImage(session.user.image || "");
+    setProfileImage(session.user.image || "/images/dummy-avatar.jpg");
     setIsEditing(false);
   };
 

@@ -105,7 +105,7 @@ export default function AdminProfile({ session, profile }: TAdminProfileProps) {
       name: profile?.name || "",
       contact: profile?.contact || "",
     });
-    setProfileImage(session.user.image || "");
+    setProfileImage(session.user.image || "/images/dummy-avatar.jpg");
     setIsEditing(false);
   };
 

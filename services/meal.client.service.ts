@@ -2,7 +2,7 @@
 
 import { Category, CreateMealData, CreateReviewData, Meal, Order, Review, ReviewStats } from "@/types/meal.type";
 
-const API_URL = "";
+const API_URL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
 
 export const mealClientService = {
   uploadToImgbb: async function (imageFile: File): Promise<string> {
