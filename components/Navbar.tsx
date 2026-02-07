@@ -10,6 +10,7 @@ import { ModeToggle } from './ModeToggle';
 import NavLogo from './NavLogo';
 import { NavAvatar } from './NavAvatar';
 import { authClient } from '@/lib/auth-client';
+import type { TUser } from '@/types/user.type';
 
 
 const logoImage = '/FoodHublogo.svg';
@@ -31,7 +32,7 @@ const navItems = [
 
 export default function NavbarSection() {
   const { data: session } = authClient.useSession();
-  const userRole = session?.user?.role;
+  const userRole = (session?.user as TUser | undefined)?.role;
 
   if (userRole === 'ADMIN') {
     return null;
