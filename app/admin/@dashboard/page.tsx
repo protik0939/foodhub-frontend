@@ -43,7 +43,9 @@ export default function AdminDashboard() {
 
   const fetchDashboardStats = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/dashboard/stats`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/dashboard/stats`, {
+        credentials: "include",
+      });
       const data = await response.json();
       setStats(data);
     } catch (error) {

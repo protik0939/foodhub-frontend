@@ -83,7 +83,9 @@ export default function CategoriesPage() {
         ...(search && { search }),
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/categories?${params}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/categories?${params}`, {
+        credentials: "include",
+      });
       const data: PaginatedResponse = await response.json();
       setCategories(data.data);
       setPagination(data.pagination);
@@ -100,6 +102,7 @@ export default function CategoriesPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -122,6 +125,7 @@ export default function CategoriesPage() {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
+          credentials: "include",
         }
       );
 
@@ -144,6 +148,7 @@ export default function CategoriesPage() {
         `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/categories/${selectedCategory.id}`,
         {
           method: "DELETE",
+          credentials: "include",
         }
       );
 

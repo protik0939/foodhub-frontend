@@ -84,7 +84,9 @@ export default function MealsPage() {
         ...(search && { search }),
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/meals?${params}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/meals?${params}`, {
+        credentials: "include",
+      });
       const data: PaginatedResponse = await response.json();
       setMeals(data.data);
       setPagination(data.pagination);
@@ -101,6 +103,7 @@ export default function MealsPage() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/meals/${selectedMeal.id}`, {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (response.ok) {

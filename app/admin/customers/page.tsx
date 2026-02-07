@@ -80,7 +80,9 @@ export default function CustomersPage() {
         ...(search && { search }),
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/customers?${params}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/customers?${params}`, {
+        credentials: "include",
+      });
       const data: PaginatedResponse = await response.json();
       setCustomers(data.data);
       setPagination(data.pagination);
@@ -101,6 +103,7 @@ export default function CustomersPage() {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: newStatus }),
+          credentials: "include",
         }
       );
 

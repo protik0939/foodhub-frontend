@@ -97,7 +97,9 @@ export default function OrdersPage() {
         ...(search && { search }),
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/orders?${params}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/orders?${params}`, {
+        credentials: "include",
+      });
       const data: PaginatedResponse = await response.json();
       setOrders(data.data);
       setPagination(data.pagination);
@@ -115,6 +117,7 @@ export default function OrdersPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -133,6 +136,7 @@ export default function OrdersPage() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/admin/orders/${selectedOrder.id}`, {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -219,7 +223,7 @@ export default function OrdersPage() {
                           onValueChange={(value) => handleStatusChange(order.id, value)}
                           disabled={updatingOrderId === order.id}
                         >
-                          <SelectTrigger className="w-[140px]">
+                          <SelectTrigger className="w-35">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
