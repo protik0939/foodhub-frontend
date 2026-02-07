@@ -30,16 +30,16 @@ const nextConfig: NextConfig = {
         destination: `${backendURL}/categories/:path*`,
       },
       {
+        source: "/api/select-role",
+        destination: `${backendURL}/select-role`,
+      },
+      {
         source: "/api/:path*",
         destination: `${backendURL}/api/:path*`,
       },
       {
         source: "/orders/:path*",
         destination: `${backendURL}/orders/:path*`,
-      },
-      {
-        source: "/select-role",
-        destination: `${backendURL}/select-role`,
       },
       {
         source: "/profile/:path*",

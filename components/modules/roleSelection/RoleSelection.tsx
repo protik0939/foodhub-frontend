@@ -40,7 +40,7 @@ export default function IdentitySelector({ userData }: {userData : TUser}) {
     if (!selected) return;
 
     try {
-      const res = await fetch(`/select-role`, {
+      const res = await fetch(`/api/select-role`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
