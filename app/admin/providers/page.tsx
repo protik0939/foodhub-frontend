@@ -155,7 +155,7 @@ export default function ProvidersPage() {
                   {providers.map((provider) => (
                     <TableRow key={provider.id}>
                       <TableCell className="font-medium">
-                        {provider.providerProfile?.providerName || "N/A"}
+                        {provider.providerProfile?.providerName || provider.name}
                       </TableCell>
                       <TableCell>{provider.providerProfile?.ownerName || provider.name}</TableCell>
                       <TableCell>

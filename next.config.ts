@@ -30,6 +30,14 @@ const nextConfig: NextConfig = {
         destination: `${backendURL}/categories/:path*`,
       },
       {
+        source: "/api/meals",
+        destination: `${backendURL}/meals`,
+      },
+      {
+        source: "/api/meals/:path*",
+        destination: `${backendURL}/meals/:path*`,
+      },
+      {
         source: "/api/select-role",
         destination: `${backendURL}/select-role`,
       },
@@ -44,28 +52,6 @@ const nextConfig: NextConfig = {
       {
         source: "/profile/:path*",
         destination: `${backendURL}/profile/:path*`,
-      },
-      // Specific meal API routes to avoid conflicts with frontend pages
-      {
-        source: "/meals",
-        destination: `${backendURL}/meals`,
-      },
-      {
-        source: "/meals/provider/:providerId",
-        destination: `${backendURL}/meals/provider/:providerId`,
-      },
-      {
-        source: "/meals/category/:categoryId",
-        destination: `${backendURL}/meals/category/:categoryId`,
-      },
-      // Only match /meals/:id (UUID format) without additional path segments
-      {
-        source: "/meals/:id([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$",
-        destination: `${backendURL}/meals/:id`,
-      },
-      {
-        source: "/categories/:path*",
-        destination: `${backendURL}/categories/:path*`,
       },
       {
         source: "/reviews/:path*",

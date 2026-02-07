@@ -1,6 +1,10 @@
 import { Category, CreateMealData, CreateReviewData, Meal, Order, Review, ReviewStats } from "@/types/meal.type";
 
-const API_URL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  process.env.APP_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
+  "http://localhost:3000";
 
 export const mealService = {
   uploadToImgbb: async function (imageFile: File): Promise<string> {
@@ -24,8 +28,8 @@ export const mealService = {
 
   getAllCategories: async function (searchTerm?: string): Promise<Category[]> {
     const url = searchTerm
-      ? `${API_URL}/categories?search=${encodeURIComponent(searchTerm)}`
-      : `${API_URL}/categories`;
+      ? `${appUrl}/api/categories?search=${encodeURIComponent(searchTerm)}`
+      : `${appUrl}/api/categories`;
 
     const response = await fetch(url, {
       cache: "no-store",
@@ -42,7 +46,7 @@ export const mealService = {
     name: string,
     description?: string,
   ): Promise<Category> {
-    const response = await fetch(`${API_URL}/categories`, {
+    const response = await fetch(`${appUrl}/api/categories`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -59,7 +63,7 @@ export const mealService = {
   },
 
   createMeal: async function (data: CreateMealData): Promise<Meal> {
-    const response = await fetch(`${API_URL}/meals`, {
+    const response = await fetch(`${appUrl}/api/meals`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -76,7 +80,7 @@ export const mealService = {
   },
 
   getMealsByProviderId: async function (providerId: string): Promise<Meal[]> {
-    const response = await fetch(`${API_URL}/meals/provider/${providerId}`, {
+    const response = await fetch(`${appUrl}/api/meals/provider/${providerId}`, {
       credentials: "include",
       cache: "no-store",
     });
@@ -89,7 +93,7 @@ export const mealService = {
   },
 
   getOrdersByProviderId: async function (providerId: string): Promise<Order[]> {
-    const response = await fetch(`${API_URL}/orders/provider/${providerId}`, {
+    const response = await fetch(`${appUrl}/orders/provider/${providerId}`, {
       credentials: "include",
       cache: "no-store",
     });
@@ -103,8 +107,8 @@ export const mealService = {
 
   getAllMeals: async function (searchTerm?: string): Promise<Meal[]> {
     const url = searchTerm
-      ? `${API_URL}/meals?search=${encodeURIComponent(searchTerm)}`
-      : `${API_URL}/meals`;
+      ? `${appUrl}/api/meals?search=${encodeURIComponent(searchTerm)}`
+      : `${appUrl}/api/meals`;
 
     const response = await fetch(url, {
       cache: "no-store",
@@ -118,7 +122,7 @@ export const mealService = {
   },
 
   getMealsByCategory: async function (categoryId: string): Promise<Meal[]> {
-    const response = await fetch(`${API_URL}/meals/category/${categoryId}`, {
+    const response = await fetch(`${appUrl}/api/meals/category/${categoryId}`, {
       cache: "no-store",
     });
     if (!response.ok) {
@@ -129,7 +133,7 @@ export const mealService = {
   },
 
   createOrder: async function (data: object): Promise<Order> {
-    const response = await fetch(`${API_URL}/orders`, {
+    const response = await fetch(`${appUrl}/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -147,7 +151,7 @@ export const mealService = {
   },
 
   getOrdersByUserId: async function (userId: string): Promise<Order[]> {
-    const response = await fetch(`${API_URL}/orders/customer/${userId}`, {
+    const response = await fetch(`${appUrl}/orders/customer/${userId}`, {
       credentials: "include",
       cache: "no-store",
     });
@@ -158,7 +162,7 @@ export const mealService = {
   },
 
   updateOrderStatus: async function (orderId: string, status: string): Promise<Order> {
-    const response = await fetch(`${API_URL}/orders/${orderId}`, {
+    const response = await fetch(`${appUrl}/orders/${orderId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -175,7 +179,7 @@ export const mealService = {
   },
 
   createReview: async function (data: CreateReviewData): Promise<Review> {
-    const response = await fetch(`${API_URL}/reviews`, {
+    const response = await fetch(`${appUrl}/reviews`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -193,7 +197,7 @@ export const mealService = {
   },
 
   getReviewsByMealId: async function (mealId: string): Promise<Review[]> {
-    const response = await fetch(`${API_URL}/reviews/meal/${mealId}`, {
+    const response = await fetch(`${appUrl}/reviews/meal/${mealId}`, {
       cache: "no-store",
     });
 

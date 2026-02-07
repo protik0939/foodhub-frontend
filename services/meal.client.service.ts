@@ -60,7 +60,7 @@ export const mealClientService = {
   },
 
   createMeal: async function (data: CreateMealData): Promise<Meal> {
-    const response = await fetch(`/meals`, {
+    const response = await fetch(`/api/meals`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export const mealClientService = {
   },
 
   getMealsByProviderId: async function (providerId: string): Promise<Meal[]> {
-    const response = await fetch(`/meals/provider/${providerId}`, {
+    const response = await fetch(`/api/meals/provider/${providerId}`, {
       credentials: "include",
       cache: "no-store",
     });
@@ -90,7 +90,7 @@ export const mealClientService = {
   },
 
   getMealById: async function (mealId: string): Promise<Meal> {
-    const response = await fetch(`/meals/${mealId}`, {
+    const response = await fetch(`/api/meals/${mealId}`, {
       cache: "no-store",
     });
 
@@ -115,7 +115,7 @@ export const mealClientService = {
   },
 
   updateMeal: async function (mealId: string, data: Partial<CreateMealData>): Promise<Meal> {
-    const response = await fetch(`/meals/${mealId}`, {
+    const response = await fetch(`/api/meals/${mealId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -132,7 +132,7 @@ export const mealClientService = {
   },
 
   deleteMeal: async function (mealId: string): Promise<void> {
-    const response = await fetch(`/meals/${mealId}`, {
+    const response = await fetch(`/api/meals/${mealId}`, {
       method: "DELETE",
       credentials: "include",
     });
