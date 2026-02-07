@@ -209,7 +209,7 @@ export const mealService = {
   },
 
   getReviewStats: async function (mealId: string): Promise<ReviewStats> {
-    const response = await fetch(`${API_URL}/reviews/stats/${mealId}`, {
+    const response = await fetch(`/reviews/stats/${mealId}`, {
       cache: "no-store",
     });
 
@@ -221,7 +221,7 @@ export const mealService = {
   },
 
   getReviewsByProviderId: async function (providerId: string): Promise<Review[]> {
-    const response = await fetch(`${API_URL}/reviews/provider/${providerId}`, {
+    const response = await fetch(`/reviews/provider/${providerId}`, {
       credentials: "include",
       cache: "no-store",
     });
@@ -234,7 +234,7 @@ export const mealService = {
   },
 
   getAllReviews: async function (): Promise<Review[]> {
-    const response = await fetch(`${API_URL}/reviews/all`, {
+    const response = await fetch(`/reviews/all`, {
       credentials: "include",
       cache: "no-store",
     });
