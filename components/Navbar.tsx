@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 
@@ -7,7 +9,7 @@ import Link from 'next/link';
 import { ModeToggle } from './ModeToggle';
 import NavLogo from './NavLogo';
 import { NavAvatar } from './NavAvatar';
-import { userService } from '@/services/user.service';
+import { authClient } from '@/lib/auth-client';
 
 
 const logoImage = '/FoodHublogo.svg';
@@ -27,8 +29,8 @@ const navItems = [
   },
 ];
 
-export default async function NavbarSection() {
-  const { data: session } = await userService.getSession();
+export default function NavbarSection() {
+  const { data: session } = authClient.useSession();
   const userRole = session?.user?.role;
 
   if (userRole === 'ADMIN') {

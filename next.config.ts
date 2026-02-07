@@ -22,6 +22,14 @@ const nextConfig: NextConfig = {
         destination: `${backendURL}/admin/:path*`,
       },
       {
+        source: "/api/categories",
+        destination: `${backendURL}/categories`,
+      },
+      {
+        source: "/api/categories/:path*",
+        destination: `${backendURL}/categories/:path*`,
+      },
+      {
         source: "/api/:path*",
         destination: `${backendURL}/api/:path*`,
       },

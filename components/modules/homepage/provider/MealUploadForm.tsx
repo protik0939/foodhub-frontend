@@ -68,7 +68,7 @@ export default function MealUploadForm({
       const data = await mealClientService.getAllCategories(search);
       setCategories(data);
     } catch (error) {
-      toast.error("Failed to fetch categories");
+      toast.error("Failed to fetch categories 3");
     }
   };
 

@@ -17,13 +17,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { X } from 'lucide-react';
+import { Star, X } from 'lucide-react';
+import ReviewModal from '@/components/modules/review/ReviewModal';
 
 export default function YourOrdersPage() {
   const { data: session, isPending } = authClient.useSession();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedOrderForReview, setSelectedOrderForReview] = useState<Order | null>(null);
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -31,24 +34,35 @@ export default function YourOrdersPage() {
     }
   }, [session, isPending]);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (session?.user?.id) {
-        try {
-          setLoading(true);
-          const ordersData = await orderClientService.getOrdersByUserId(session.user.id);
-          setOrders(ordersData);
-        } catch (error) {
-          console.error(error);
-          toast.error('Failed to load orders');
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
+  const fetchOrders = async (userId: string) => {
+    try {
+      setLoading(true);
+      const ordersData = await orderClientService.getOrdersByUserId(userId);
+      setOrders(ordersData);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchOrders();
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchOrders(session.user.id);
+    }
   }, [session]);
+
+  const handleReviewClick = (order: Order) => {
+    setSelectedOrderForReview(order);
+    setReviewModalOpen(true);
+  };
+
+  const handleReviewSubmitted = async () => {
+    if (session?.user?.id) {
+      await fetchOrders(session.user.id);
+    }
+  };
 
   const handleCancelOrder = async (orderId: string) => {
     try {
@@ -191,6 +205,18 @@ export default function YourOrdersPage() {
                       </TooltipProvider>
                     )}
 
+                    {order.status === 'DELIVERED' && (!order.reviews || order.reviews.length === 0) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 w-full sm:w-auto cursor-pointer"
+                        onClick={() => handleReviewClick(order)}
+                      >
+                        <Star className="w-4 h-4 mr-1" />
+                        Write Review
+                      </Button>
+                    )}
+
                     {order.reviews && order.reviews.length > 0 && (
                       <div className="mt-3 pt-3 border-t">
                         <p className="text-sm font-medium">Your Review:</p>
@@ -206,6 +232,17 @@ export default function YourOrdersPage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {selectedOrderForReview && (
+        <ReviewModal
+          open={reviewModalOpen}
+          onOpenChange={setReviewModalOpen}
+          orderId={selectedOrderForReview.id}
+          mealName={selectedOrderForReview.meal?.name || ""}
+          mealImage={selectedOrderForReview.meal?.imageUrl || ""}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
       )}
     </div>
   );
