@@ -5,11 +5,8 @@ import { authClient } from "@/lib/auth-client"
 export default function SignInWithGoogleButton({ text }: { text: string }) {
 
     const handleGoogleLogin = async () => {
-        const fallbackUrl =
-            process.env.NEXT_PUBLIC_PROD_APP_URL ||
-            process.env.APP_URL
-        const callbackURL =
-            typeof window === "undefined" ? fallbackUrl : window.location.origin;
+
+        const callbackURL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
 
         const data = authClient.signIn.social({
             provider: "google",
