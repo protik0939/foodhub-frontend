@@ -3,7 +3,7 @@ import { Order } from "@/types/order.type";
 export const orderClientService = {
   getOrdersByUserId: async function (userId: string): Promise<Order[]> {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/orders/customer/${userId}`,
+      `/orders/customer/${userId}`,
       {
         credentials: "include",
         cache: "no-store",
@@ -19,7 +19,7 @@ export const orderClientService = {
 
   cancelOrder: async function (orderId: string): Promise<Order> {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/orders/${orderId}/cancel`,
+      `/orders/${orderId}/cancel`,
       {
         method: "PATCH",
         credentials: "include",
