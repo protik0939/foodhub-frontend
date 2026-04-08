@@ -28,13 +28,14 @@ import {
   LayoutDashboard,
   ListOrdered,
   LogOut,
+  ShieldCheck,
   Settings,
   Star,
   Store,
   Users,
 } from "lucide-react";
 
-type Role = "CUSTOMER" | "PROVIDER" | "ADMIN";
+type Role = "CUSTOMER" | "PROVIDER" | "ADMIN" | "MANAGER";
 
 type DashboardOrder = {
   id: string;
@@ -89,6 +90,14 @@ const MENU = {
     { key: "providers", title: "Providers", icon: Store },
     { key: "profile", title: "Profile", icon: Settings },
   ],
+  MANAGER: [
+    { key: "overview", title: "Overview", icon: LayoutDashboard },
+    { key: "orders", title: "Orders", icon: ListOrdered },
+    { key: "users", title: "Users", icon: Users },
+    { key: "meals", title: "Meals", icon: ChefHat },
+    { key: "providers", title: "Providers", icon: Store },
+    { key: "profile", title: "Profile", icon: Settings },
+  ],
 };
 
 async function fetchDashboardData(role: Role, userId: string): Promise<DashboardData> {
@@ -105,6 +114,39 @@ async function fetchDashboardData(role: Role, userId: string): Promise<Dashboard
     ]);
 
     return { orders, meals, reviews, adminStats: null };
+  }
+
+  if (role === "MANAGER") {
+    try {
+      const [statsResponse, ordersResponse, allMeals] = await Promise.all([
+        fetch(`/api/admin/dashboard/stats`, { credentials: "include" }).then((res) => res.json()),
+        fetch(`/api/admin/orders?page=1&limit=50`, { credentials: "include" }).then((res) =>
+          res.json(),
+        ),
+        mealClientService.getAllMeals(),
+      ]);
+
+      return {
+        orders: ordersResponse.data || [],
+        meals: allMeals || [],
+        reviews: [],
+        adminStats: statsResponse.stats || null,
+      };
+    } catch {
+      const fallbackMeals = await mealClientService.getAllMeals();
+      return {
+        orders: [],
+        meals: fallbackMeals || [],
+        reviews: [],
+        adminStats: {
+          totalCustomers: 0,
+          totalProviders: 0,
+          totalOrders: 0,
+          totalMeals: fallbackMeals.length,
+          totalCategories: 0,
+        },
+      };
+    }
   }
 
   const [statsResponse, ordersResponse, allMeals] = await Promise.all([
@@ -351,6 +393,22 @@ function ProvidersPanel() {
   );
 }
 
+function CompliancePanel() {
+  return (
+    <Card className="app-card">
+      <CardHeader>
+        <CardTitle className="inline-flex items-center gap-2">
+          <ShieldCheck className="size-5 text-primary" /> Manager checks
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2 text-sm text-muted-foreground">
+        <p>Monitor SLA, order quality, and provider reliability from admin sections.</p>
+        <p>Use user and provider panels to review performance before taking action.</p>
+      </CardContent>
+    </Card>
+  );
+}
+
 function MetricCard({ label, value }: Readonly<{ label: string; value: string | number }>) {
   return (
     <Card className="app-card">
@@ -418,9 +476,16 @@ export default function RoleDashboard({ role, userId, userName }: Readonly<RoleD
       />
     ),
     orders: <OrdersPanel orders={orders} />,
-    users: role === "ADMIN" ? <UsersPanel adminStats={adminStats} /> : null,
+    users:
+      role === "ADMIN" || role === "MANAGER" ? <UsersPanel adminStats={adminStats} /> : null,
     meals: <MealsPanel meals={meals} role={role} />,
-    providers: role === "ADMIN" ? <ProvidersPanel /> : null,
+    providers:
+      role === "ADMIN" || role === "MANAGER" ? (
+        <div className="space-y-4">
+          <ProvidersPanel />
+          {role === "MANAGER" ? <CompliancePanel /> : null}
+        </div>
+      ) : null,
     reviews: role === "PROVIDER" ? <ReviewsPanel reviews={reviews} /> : null,
     profile: <ProfilePanel />,
   };

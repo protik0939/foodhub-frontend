@@ -69,9 +69,9 @@ export function Footer() {
 							FoodHub connects local kitchens with hungry customers through reliable delivery, transparent reviews, and real-time order tracking.
 						</p>
 						<div className="text-sm text-muted-foreground space-y-1">
-							<p>Support: support@foodhub.app</p>
-							<p>Phone: +1 (800) 555-0147</p>
-							<p>Address: 17 City Market Street, San Francisco, CA</p>
+							<p>Support: support@foodhub.com.bd</p>
+							<p>Phone: +880 9612-345678</p>
+							<p>Address: House 17, Road 11, Banani, Dhaka 1213, Bangladesh</p>
 						</div>
 						<div className="flex gap-2">
 							{socialLinks.map((item, index) => (

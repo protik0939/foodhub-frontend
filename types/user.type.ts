@@ -26,7 +26,7 @@ export interface TUser {
   updatedAt: string;   // ISO string
 }
 
-export type TUserRole = "CUSTOMER" | "PROVIDER" | "ADMIN" | "NONE";
+export type TUserRole = "CUSTOMER" | "PROVIDER" | "ADMIN" | "MANAGER" | "NONE";
 
 export type TAccountStatus = "ACTIVE" | "SUSPENDED";
 

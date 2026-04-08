@@ -1,6 +1,8 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import AdminTopbar from "@/components/admin/AdminTopbar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/admin-sidebar";
 import { userService } from "@/services/user.service";
+import type { TUser } from "@/types/user.type";
 import { redirect } from "next/navigation";
 
 export const dynamic = 'force-dynamic';
@@ -21,9 +23,7 @@ export default async function AdminLayout({
         <div className="flex w-full min-h-screen">
           <AppSidebar />
           <main className="flex-1 p-6">
-            <div className="lg:hidden mb-4">
-              <SidebarTrigger className="p-2" />
-            </div>
+            <AdminTopbar initialUser={(session?.data?.user as TUser | undefined) || null} />
             {dashboard}
             {children}
           </main>

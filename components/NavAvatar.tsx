@@ -1,5 +1,6 @@
 "use client"
 
+import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,11 +17,33 @@ import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import type { TUser } from "@/types/user.type"
 
-export function NavAvatar() {
+type NavAvatarProps = {
+    initialUser?: TUser | null
+}
+
+const subscribe = () => () => {}
+
+function getDashboardHref(role?: TUser["role"]): string {
+    if (role === "ADMIN") {
+        return "/admin"
+    }
+
+    if (role === "PROVIDER") {
+        return "/"
+    }
+
+    return "/dashboard"
+}
+
+export function NavAvatar({ initialUser = null }: Readonly<NavAvatarProps>) {
     const { data: session, isPending } = authClient.useSession()
+    const isHydrated = useSyncExternalStore(subscribe, () => true, () => false)
     const router = useRouter();
-    const role = (session?.user as TUser | undefined)?.role;
-    const dashboardHref = role === "ADMIN" ? "/admin" : role === "PROVIDER" ? "/" : "/dashboard";
+    const resolvedUser = isHydrated
+        ? ((session?.user as TUser | undefined) ?? undefined)
+        : (initialUser ?? undefined)
+    const role = resolvedUser?.role;
+    const dashboardHref = getDashboardHref(role);
     
     const handleLogout = async () => {
         await logoutEverywhere({
@@ -28,9 +51,9 @@ export function NavAvatar() {
         });
     }
 
-    if (isPending) return null
+    if (isHydrated && isPending) return null
 
-    if (!session) {
+    if (!resolvedUser) {
         return (
             <div className="hidden gap-2 lg:flex">
                 <Button asChild variant="ghost">
@@ -48,9 +71,9 @@ export function NavAvatar() {
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full cursor-pointer">
                     <Avatar className="h-10 w-10">
-                        <AvatarImage src={session.user?.image || ""} alt={session.user?.name} />
+                        <AvatarImage src={resolvedUser.image || ""} alt={resolvedUser.name} />
                         <AvatarFallback>
-                            {session.user?.name
+                            {resolvedUser.name
                                 ?.split(" ")
                                 .map((part) => part[0])
                                 .join("")

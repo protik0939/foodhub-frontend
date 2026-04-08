@@ -43,7 +43,7 @@ export function LoginForm(props: React.ComponentProps<typeof Card>) {
       password: ["admin", "12345"].join(""),
     },
     {
-      label: "Resturant",
+      label: "Provider",
       email: "golpoprotidinbd@gmail.com",
       password: ["LS2Xq", "PMDppUbZXW"].join(""),
     },

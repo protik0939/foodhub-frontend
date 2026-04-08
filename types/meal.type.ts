@@ -37,6 +37,33 @@ export interface SearchSuggestion {
   confidence: number;
 }
 
+export interface PaginatedMealsResponse {
+  data: Meal[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+}
+
+export interface AIContentSuggestion {
+  id: string;
+  title: string;
+  type: "blog" | "newsletter" | "insight";
+  reason: string;
+  href: string;
+}
+
+export interface NewsletterRecommendation {
+  id: string;
+  subject: string;
+  summary: string;
+  focus: string;
+}
+
 export interface CreateMealData {
   name: string;
   description: string;

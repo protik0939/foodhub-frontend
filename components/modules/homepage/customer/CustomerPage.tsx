@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { mealClientService } from "@/services/meal.client.service";
-import { Category, Meal, Order, SearchSuggestion } from "@/types/meal.type";
+import {
+  AIContentSuggestion,
+  Category,
+  Meal,
+  NewsletterRecommendation,
+  Order,
+  SearchSuggestion,
+} from "@/types/meal.type";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,11 +21,15 @@ import Image from "next/image";
 import {
   ArrowRight,
   Bot,
+  Building2,
   Brain,
   ChartNoAxesCombined,
   ChefHat,
   Clock3,
+  CreditCard,
+  Handshake,
   MapPin,
+  Shield,
   Search,
   ShieldCheck,
   Sparkles,
@@ -38,6 +49,7 @@ const heroMessages = [
 ];
 
 const heroImage = "/images/forHomepage.jpg";
+const ALL_MEALS_PAGE_SIZE = 8;
 
 export default function CustomerPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -45,12 +57,21 @@ export default function CustomerPage() {
   const [trendingMeals, setTrendingMeals] = useState<Meal[]>([]);
   const [recommendedMeals, setRecommendedMeals] = useState<Meal[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredMeals, setFilteredMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [allMealsLoading, setAllMealsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [suggestionOpen, setSuggestionOpen] = useState(false);
+  const [allMealsPage, setAllMealsPage] = useState(1);
+  const [allMealsPageData, setAllMealsPageData] = useState<Meal[]>([]);
+  const [allMealsTotal, setAllMealsTotal] = useState(0);
+  const [allMealsTotalPages, setAllMealsTotalPages] = useState(1);
+  const [hasNextAllMealsPage, setHasNextAllMealsPage] = useState(false);
+  const [hasPrevAllMealsPage, setHasPrevAllMealsPage] = useState(false);
+  const [contentSuggestions, setContentSuggestions] = useState<AIContentSuggestion[]>([]);
+  const [newsletterRecommendations, setNewsletterRecommendations] = useState<NewsletterRecommendation[]>([]);
+  const [aiContentLoading, setAiContentLoading] = useState(true);
   const [activeHeroText, setActiveHeroText] = useState(0);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedOrderForReview, setSelectedOrderForReview] = useState<Order | null>(null);
@@ -78,7 +99,6 @@ export default function CustomerPage() {
         setCategories(categoryData);
         setMeals(mealData);
         setTrendingMeals(trendingData);
-        setFilteredMeals(mealData);
 
         if (session?.user?.id) {
           const [recommendations, userOrders] = await Promise.all([
@@ -99,24 +119,54 @@ export default function CustomerPage() {
   }, [session?.user?.id]);
 
   useEffect(() => {
-    let nextMeals = [...meals];
+    setAllMealsPage(1);
+  }, [searchTerm, selectedCategory]);
 
-    if (selectedCategory !== "all") {
-      nextMeals = nextMeals.filter((meal) => meal.categoryId === selectedCategory);
-    }
+  useEffect(() => {
+    let cancelled = false;
 
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      nextMeals = nextMeals.filter(
-        (meal) =>
-          meal.name.toLowerCase().includes(term) ||
-          meal.description.toLowerCase().includes(term) ||
-          meal.category?.name.toLowerCase().includes(term),
-      );
-    }
+    const loadPaginatedMeals = async () => {
+      setAllMealsLoading(true);
+      try {
+        const response = await mealClientService.getMealsPaginated({
+          page: allMealsPage,
+          limit: ALL_MEALS_PAGE_SIZE,
+          searchTerm: searchTerm.trim() || undefined,
+          categoryId: selectedCategory !== "all" ? selectedCategory : undefined,
+        });
 
-    setFilteredMeals(nextMeals);
-  }, [searchTerm, selectedCategory, meals]);
+        if (cancelled) {
+          return;
+        }
+
+        setAllMealsPageData(response.data);
+        setAllMealsTotal(response.meta.total);
+        setAllMealsTotalPages(response.meta.totalPages);
+        setHasNextAllMealsPage(response.meta.hasNextPage);
+        setHasPrevAllMealsPage(response.meta.hasPrevPage);
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        setAllMealsPageData([]);
+        setAllMealsTotal(0);
+        setAllMealsTotalPages(1);
+        setHasNextAllMealsPage(false);
+        setHasPrevAllMealsPage(false);
+      } finally {
+        if (!cancelled) {
+          setAllMealsLoading(false);
+        }
+      }
+    };
+
+    loadPaginatedMeals();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [allMealsPage, searchTerm, selectedCategory]);
 
   useEffect(() => {
     const timeout = setTimeout(async () => {
@@ -135,6 +185,69 @@ export default function CustomerPage() {
 
     return () => clearTimeout(timeout);
   }, [searchTerm]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadAIContent = async () => {
+      setAiContentLoading(true);
+
+      const topCategories = categories.slice(0, 5).map((category) => category.name);
+      const recentMeals = recommendedMeals.slice(0, 6).map((meal) => meal.name);
+      const interests = Array.from(
+        new Set(
+          [
+            ...topCategories.slice(0, 3),
+            ...trendingMeals.slice(0, 3).map((meal) => meal.category?.name || meal.name),
+            session?.user?.id ? "personalized" : "discovery",
+          ].filter(Boolean),
+        ),
+      );
+
+      try {
+        const [content, newsletter] = await Promise.all([
+          mealClientService.getAIContentSuggestions({
+            interests,
+            topCategories,
+            recentMeals,
+          }),
+          mealClientService.getNewsletterRecommendations({
+            interests,
+            topCategories,
+            recentMeals,
+          }),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        setContentSuggestions(content);
+        setNewsletterRecommendations(newsletter);
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        setContentSuggestions([]);
+        setNewsletterRecommendations([]);
+      } finally {
+        if (!cancelled) {
+          setAiContentLoading(false);
+        }
+      }
+    };
+
+    if (!categories.length && !trendingMeals.length) {
+      return;
+    }
+
+    loadAIContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categories, recommendedMeals, session?.user?.id, trendingMeals]);
 
   const providerCount = useMemo(() => {
     const providerIds = new Set(
@@ -204,6 +317,25 @@ export default function CustomerPage() {
     (order) => order.status === "DELIVERED" && (!order.reviews || order.reviews.length === 0),
   );
 
+  const allMealsPageNumbers = useMemo(() => {
+    const maxVisible = 7;
+    const total = allMealsTotalPages;
+
+    if (total <= maxVisible) {
+      return Array.from({ length: total }, (_, index) => index + 1);
+    }
+
+    const half = Math.floor(maxVisible / 2);
+    let start = Math.max(1, allMealsPage - half);
+    const end = Math.min(total, start + maxVisible - 1);
+
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  }, [allMealsPage, allMealsTotalPages]);
+
   const openReviewModal = (order: Order) => {
     setSelectedOrderForReview(order);
     setReviewModalOpen(true);
@@ -219,17 +351,17 @@ export default function CustomerPage() {
   };
 
   const allMealsContent = (() => {
-    if (loading) {
+    if (allMealsLoading) {
       return (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 8 }, (_, index) => (
+          {Array.from({ length: ALL_MEALS_PAGE_SIZE }, (_, index) => (
             <Skeleton key={`all-skeleton-${index}`} className="h-105 rounded-2xl" />
           ))}
         </div>
       );
     }
 
-    if (filteredMeals.length === 0) {
+    if (allMealsPageData.length === 0) {
       return (
         <Card className="app-card">
           <CardContent className="p-10 text-center text-muted-foreground">
@@ -240,9 +372,116 @@ export default function CustomerPage() {
     }
 
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {filteredMeals.slice(0, 8).map((meal) => (
-          <MealCard key={meal.id} meal={meal} onOrder={() => undefined} />
+      <>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {allMealsPageData.map((meal) => (
+            <MealCard key={meal.id} meal={meal} onOrder={() => undefined} />
+          ))}
+        </div>
+
+        <div className="mt-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+          <p className="text-sm text-muted-foreground">
+            Showing page {allMealsPage} of {allMealsTotalPages} ({allMealsTotal} meals)
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              disabled={!hasPrevAllMealsPage || allMealsLoading}
+              onClick={() => setAllMealsPage((prev) => Math.max(1, prev - 1))}
+            >
+              Previous
+            </Button>
+            {allMealsPageNumbers.map((pageNumber) => (
+              <Button
+                key={`all-meals-page-${pageNumber}`}
+                variant={pageNumber === allMealsPage ? "default" : "outline"}
+                size="sm"
+                disabled={allMealsLoading}
+                onClick={() => setAllMealsPage(pageNumber)}
+              >
+                {pageNumber}
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              disabled={!hasNextAllMealsPage || allMealsLoading}
+              onClick={() => setAllMealsPage((prev) => Math.min(allMealsTotalPages, prev + 1))}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  })();
+
+  const aiContentSuggestionContent = (() => {
+    if (aiContentLoading) {
+      return (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }, (_, index) => (
+            <Skeleton key={`ai-content-skeleton-${index}`} className="h-16 rounded-xl" />
+          ))}
+        </div>
+      );
+    }
+
+    if (!contentSuggestions.length) {
+      return (
+        <p className="text-sm text-muted-foreground">
+          No AI content suggestions right now. Browse Explore to generate better recommendations.
+        </p>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {contentSuggestions.map((item) => (
+          <Link
+            key={item.id}
+            href={item.href}
+            className="block rounded-xl border border-border/60 p-4 transition-colors hover:bg-muted"
+          >
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <h3 className="font-semibold">{item.title}</h3>
+              <Badge variant="secondary" className="uppercase">
+                {item.type}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">{item.reason}</p>
+          </Link>
+        ))}
+      </div>
+    );
+  })();
+
+  const newsletterRecommendationContent = (() => {
+    if (aiContentLoading) {
+      return (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }, (_, index) => (
+            <Skeleton key={`newsletter-skeleton-${index}`} className="h-20 rounded-xl" />
+          ))}
+        </div>
+      );
+    }
+
+    if (!newsletterRecommendations.length) {
+      return (
+        <p className="text-sm text-muted-foreground">
+          Newsletter recommendations are loading as we learn more from user activity.
+        </p>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {newsletterRecommendations.map((item) => (
+          <div key={item.id} className="rounded-xl border border-border/60 p-4">
+            <h3 className="font-semibold">{item.subject}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{item.summary}</p>
+            <p className="mt-2 text-xs text-muted-foreground">Focus: {item.focus}</p>
+          </div>
         ))}
       </div>
     );
@@ -406,6 +645,118 @@ export default function CustomerPage() {
             <p>Order states are visible from preparing to delivered with consistent updates.</p>
             <p>Review workflow allows quick feedback directly from delivered orders.</p>
             <p>Privacy and support pages are always available for clear policy access.</p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="app-shell mt-12 grid gap-4 lg:grid-cols-2">
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle>AI-Generated Content Suggestions</CardTitle>
+          </CardHeader>
+          <CardContent>{aiContentSuggestionContent}</CardContent>
+        </Card>
+
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle>Smart Email / Newsletter Recommendations</CardTitle>
+          </CardHeader>
+          <CardContent>{newsletterRecommendationContent}</CardContent>
+        </Card>
+      </section>
+
+      <section className="app-shell mt-12">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-heading">Coverage Across Bangladesh</h2>
+          <Badge className="border border-border bg-card text-foreground">Nationwide growing network</Badge>
+        </div>
+        <Card className="app-card">
+          <CardContent className="space-y-4 p-6">
+            <p className="text-sm text-muted-foreground">
+              FoodHub currently prioritizes dense delivery zones and expands based on demand signals.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {["Dhaka", "Chattogram", "Sylhet", "Khulna", "Rajshahi", "Barishal", "Rangpur", "Mymensingh"].map((city) => (
+                <Badge key={city} variant="secondary" className="px-3 py-1">
+                  {city}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="app-shell mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2 text-base">
+              <Shield className="size-4 text-primary" /> Secure Payments
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Transactions are protected with strict checkout and session safety controls.
+          </CardContent>
+        </Card>
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2 text-base">
+              <CreditCard className="size-4 text-secondary" /> Flexible Payment Options
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Cash on delivery and additional payment methods are available per provider setup.
+          </CardContent>
+        </Card>
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2 text-base">
+              <Handshake className="size-4 text-accent" /> Trusted Provider Policy
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Verified profiles and rating visibility help customers make confident choices.
+          </CardContent>
+        </Card>
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2 text-base">
+              <Building2 className="size-4 text-primary" /> Local Business Growth
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            FoodHub helps neighborhood kitchens scale orders with predictable demand insights.
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="app-shell mt-12 grid gap-4 lg:grid-cols-2">
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle>Service Promise</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>1. Reliable handoff updates from kitchen acceptance to delivery.</p>
+            <p>2. Transparent cancellation and support processes for customers.</p>
+            <p>3. Structured review collection to continuously improve meal quality.</p>
+            <p>4. AI-assisted discovery to reduce search time and improve satisfaction.</p>
+          </CardContent>
+        </Card>
+
+        <Card className="app-card bg-secondary/10">
+          <CardContent className="flex h-full flex-col justify-between p-6">
+            <div>
+              <h2 className="text-2xl font-semibold">Own a kitchen in Bangladesh?</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Join FoodHub as a provider to list meals, receive order insights, and reach local customers faster.
+              </p>
+            </div>
+            <div className="mt-5">
+              <Button asChild>
+                <Link href="/select-role">
+                  Join as Provider <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </section>

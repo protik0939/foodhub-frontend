@@ -1,9 +1,11 @@
 "use client";
 
+import { useSyncExternalStore, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, Sparkles } from "lucide-react";
+import { ChevronDown, Menu, Sparkles } from "lucide-react";
 
 import {
+  SheetClose,
   Sheet,
   SheetContent,
   SheetTitle,
@@ -21,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const loggedOutRoutes = [
   { title: "Home", href: "/" },
@@ -42,14 +45,27 @@ const loggedInRoutes = [
   { title: "Help", href: "/help" },
 ];
 
-export default function NavbarSection() {
+type NavbarSectionProps = {
+  initialUser?: TUser | null;
+};
+
+const subscribe = () => () => {};
+
+export default function NavbarSection({ initialUser = null }: Readonly<NavbarSectionProps>) {
   const { data: session } = authClient.useSession();
-  const userRole = (session?.user as TUser | undefined)?.role;
+  const isHydrated = useSyncExternalStore(subscribe, () => true, () => false);
+  const [isExploreMoreOpen, setIsExploreMoreOpen] = useState(false);
+
+  const resolvedUser = isHydrated
+    ? ((session?.user as TUser | undefined) ?? undefined)
+    : (initialUser ?? undefined);
+  const userRole = resolvedUser?.role;
+  const hasSession = isHydrated ? Boolean(session?.user) : Boolean(initialUser);
 
   if (userRole === "ADMIN") {
     return null;
   }
-  const displayNavItems = session ? loggedInRoutes : loggedOutRoutes;
+  const displayNavItems = hasSession ? loggedInRoutes : loggedOutRoutes;
   const showNavItems = userRole !== "PROVIDER";
 
   return (
@@ -70,21 +86,41 @@ export default function NavbarSection() {
               </Button>
             ))}
 
-            <DropdownMenu>
+            <DropdownMenu open={isExploreMoreOpen} onOpenChange={setIsExploreMoreOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2">
+                <Button
+                  variant="ghost"
+                  className="gap-2 cursor-pointer"
+                  aria-expanded={isExploreMoreOpen}
+                  onMouseEnter={() => setIsExploreMoreOpen(true)}
+                  onMouseLeave={() => setIsExploreMoreOpen(false)}
+                >
                   <Sparkles className="size-4" />
                   Explore More
+                  <ChevronDown
+                    className={`size-4 transition-transform duration-200 ${
+                      isExploreMoreOpen ? "rotate-180" : "rotate-0"
+                    }`}
+                  />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent
+                align="end"
+                className="w-56"
+                onMouseEnter={() => setIsExploreMoreOpen(true)}
+                onMouseLeave={() => setIsExploreMoreOpen(false)}
+              >
                 {displayNavItems.slice(5).map((item) => (
-                  <DropdownMenuItem key={item.title} asChild>
-                    <Link href={item.href}>{item.title}</Link>
+                  <DropdownMenuItem key={item.title} asChild className="cursor-pointer">
+                    <Link href={item.href} className="cursor-pointer">
+                      {item.title}
+                    </Link>
                   </DropdownMenuItem>
                 ))}
-                <DropdownMenuItem asChild>
-                  <Link href="/privacy">Privacy</Link>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/privacy" className="cursor-pointer">
+                    Privacy
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -93,7 +129,7 @@ export default function NavbarSection() {
 
         <div className="flex flex-1 justify-end gap-3">
           <ModeToggle />
-          <NavAvatar />
+          <NavAvatar initialUser={initialUser} />
         </div>
 
         {showNavItems && (
@@ -115,20 +151,62 @@ export default function NavbarSection() {
                   <NavLogo />
                 </Link>
               </SheetTitle>
+
+              {hasSession && resolvedUser ? (
+                <SheetClose asChild>
+                  <Link
+                    href="/profile"
+                    className="mt-4 flex items-center gap-3 rounded-xl border border-border bg-card/70 px-3 py-3 transition-colors hover:bg-muted"
+                  >
+                    <Avatar className="size-10">
+                      <AvatarImage src={resolvedUser.image || ""} alt={resolvedUser.name} />
+                      <AvatarFallback>
+                        {resolvedUser.name
+                          ?.split(" ")
+                          .map((part) => part[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase() || "FH"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-semibold leading-tight">{resolvedUser.name}</p>
+                      <p className="text-xs text-muted-foreground">Tap to view profile</p>
+                    </div>
+                  </Link>
+                </SheetClose>
+              ) : (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <SheetClose asChild>
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href="/login">Log in</Link>
+                    </Button>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Button asChild className="w-full">
+                      <Link href="/signup">Sign up</Link>
+                    </Button>
+                  </SheetClose>
+                </div>
+              )}
+
               <nav className="-mx-4 my-6 flex flex-1 flex-col gap-1">
                 {displayNavItems.map((item) => (
-                  <Button
-                    key={item.title}
-                    asChild
-                    className="justify-start text-base"
-                    variant="ghost"
-                  >
-                    <Link href={item.href}>{item.title}</Link>
-                  </Button>
+                  <SheetClose key={item.title} asChild>
+                    <Button
+                      asChild
+                      className="justify-start text-base"
+                      variant="ghost"
+                    >
+                      <Link href={item.href}>{item.title}</Link>
+                    </Button>
+                  </SheetClose>
                 ))}
-                <Button asChild className="justify-start text-base" variant="ghost">
-                  <Link href="/privacy">Privacy</Link>
-                </Button>
+                <SheetClose asChild>
+                  <Button asChild className="justify-start text-base" variant="ghost">
+                    <Link href="/privacy">Privacy</Link>
+                  </Button>
+                </SheetClose>
               </nav>
             </SheetContent>
           </Sheet>

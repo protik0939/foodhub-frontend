@@ -25,7 +25,7 @@ export default async function Page() {
     redirect("/");
   }
 
-  if (role !== "CUSTOMER") {
+  if (role !== "CUSTOMER" && role !== "MANAGER") {
     redirect("/");
   }
 

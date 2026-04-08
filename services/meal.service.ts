@@ -1,4 +1,16 @@
-import { Category, CreateMealData, CreateReviewData, Meal, Order, Review, ReviewStats, SearchSuggestion } from "@/types/meal.type";
+import {
+  AIContentSuggestion,
+  Category,
+  CreateMealData,
+  CreateReviewData,
+  Meal,
+  NewsletterRecommendation,
+  Order,
+  PaginatedMealsResponse,
+  Review,
+  ReviewStats,
+  SearchSuggestion,
+} from "@/types/meal.type";
 
 const appUrl =
   process.env.NEXT_PUBLIC_APP_URL ||
@@ -133,6 +145,36 @@ export const mealService = {
     return response.json();
   },
 
+  getMealsPaginated: async function (params: {
+    page: number;
+    limit: number;
+    searchTerm?: string;
+    categoryId?: string;
+  }): Promise<PaginatedMealsResponse> {
+    const query = new URLSearchParams({
+      page: String(params.page),
+      limit: String(params.limit),
+    });
+
+    if (params.searchTerm?.trim()) {
+      query.set("search", params.searchTerm.trim());
+    }
+
+    if (params.categoryId) {
+      query.set("categoryId", params.categoryId);
+    }
+
+    const response = await fetch(`${appUrl}/api/meals?${query.toString()}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch paginated meals");
+    }
+
+    return response.json();
+  },
+
   getMealsByCategory: async function (categoryId: string): Promise<Meal[]> {
     const response = await fetch(`${appUrl}/api/meals/category/${categoryId}`, {
       cache: "no-store",
@@ -179,6 +221,48 @@ export const mealService = {
 
     if (!response.ok) {
       throw new Error("Failed to fetch recommendations");
+    }
+
+    return response.json();
+  },
+
+  getAIContentSuggestions: async function (payload: {
+    interests?: string[];
+    topCategories?: string[];
+    recentMeals?: string[];
+  }): Promise<AIContentSuggestion[]> {
+    const response = await fetch(`${appUrl}/api/ai/content-suggestions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch AI content suggestions");
+    }
+
+    return response.json();
+  },
+
+  getNewsletterRecommendations: async function (payload: {
+    interests?: string[];
+    topCategories?: string[];
+    recentMeals?: string[];
+  }): Promise<NewsletterRecommendation[]> {
+    const response = await fetch(`${appUrl}/api/ai/newsletter-recommendations`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch newsletter recommendations");
     }
 
     return response.json();
