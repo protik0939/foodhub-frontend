@@ -13,94 +13,66 @@ import Link from "next/link";
 
 export function Footer() {
 	const company = [
-		{
-			title: "About Us",
-			href: "#",
-		},
-		{
-			title: "Careers",
-			href: "#",
-		},
-		{
-			title: "Brand assets",
-			href: "#",
-		},
-		{
-			title: "Privacy Policy",
-			href: "#",
-		},
-		{
-			title: "Terms of Service",
-			href: "#",
-		},
+		{ title: "About FoodHub", href: "/about" },
+		{ title: "Privacy Policy", href: "/privacy" },
+		{ title: "Help Center", href: "/help" },
+		{ title: "Contact", href: "/contact" },
 	];
 
 	const resources = [
-		{
-			title: "Blog",
-			href: "#",
-		},
-		{
-			title: "Help Center",
-			href: "#",
-		},
-		{
-			title: "Contact Support",
-			href: "#",
-		},
-		{
-			title: "Community",
-			href: "#",
-		},
-		{
-			title: "Security",
-			href: "#",
-		},
+		{ title: "Explore Meals", href: "/explore" },
+		{ title: "Top Brands", href: "/topbrands" },
+		{ title: "Categories", href: "/categories" },
+		{ title: "Blog", href: "/blog" },
 	];
 
 	const socialLinks = [
 		{
 			icon: FacebookIcon,
-			link: "#",
+			link: "https://www.facebook.com",
 		},
 		{
 			icon: GithubIcon,
-			link: "#",
+			link: "https://github.com",
 		},
 		{
 			icon: InstagramIcon,
-			link: "#",
+			link: "https://www.instagram.com",
 		},
 		{
 			icon: LinkedinIcon,
-			link: "#",
+			link: "https://www.linkedin.com",
 		},
 		{
 			icon: TwitterIcon,
-			link: "#",
+			link: "https://x.com",
 		},
 		{
 			icon: YoutubeIcon,
-			link: "#",
+			link: "https://www.youtube.com",
 		},
 	];
 	return (
-		<footer className="relative flex justify-center items-center">
+		<footer className="relative mt-14 flex items-center justify-center border-t border-border/50 bg-muted/40">
 			<div
 				className={cn(
-					"w-full lg:border-x",
+					"w-full",
 					"dark:bg-[radial-gradient(35%_80%_at_30%_0%,--theme(--color-foreground/.1),transparent)]"
 				)}
 			>
-				<div className="absolute inset-x-0 h-px w-full bg-border" />
-				<div className="grid w-full grid-cols-6 gap-6 p-4 px-20">
-					<div className="col-span-6 flex flex-col gap-4 pt-5 md:col-span-4">
+				<div className="grid app-shell w-full grid-cols-6 gap-6 px-4 py-10 sm:px-6 lg:px-8">
+					<div className="col-span-6 flex flex-col gap-4 md:col-span-3">
 						<Link className="w-max" href="/">
 							<NavLogo/>
 						</Link>
-						<p className="max-w-sm text-balance font-mono text-muted-foreground text-sm">
-							Eat! Sleep! Code!
+						<p className="max-w-sm text-balance text-muted-foreground text-sm">
+							FoodHub connects local kitchens with hungry customers through reliable delivery, transparent reviews, and real-time order tracking.
 						</p>
+						<div className="text-sm text-muted-foreground space-y-1">
+							<p>Support: support@foodhub.app</p>
+							<p>Phone: +1 (800) 555-0147</p>
+							<p>Address: 17 City Market Street, San Francisco, CA</p>
+						</div>
 						<div className="flex gap-2">
 							{socialLinks.map((item, index) => (
 								<Button
@@ -108,7 +80,7 @@ export function Footer() {
 									size="icon-sm"
 									variant="outline"
 								>
-									<a href={item.link} target="_blank">
+									<a href={item.link} target="_blank" rel="noreferrer">
 										<item.icon className="size-3.5" />
 									</a>
 								</Button>
@@ -119,13 +91,13 @@ export function Footer() {
 						<span className="text-muted-foreground text-xs">Resources</span>
 						<div className="mt-2 flex flex-col gap-2">
 							{resources.map(({ href, title }) => (
-								<a
+								<Link
 									className="w-max text-sm hover:underline"
 									href={href}
 									key={title}
 								>
 									{title}
-								</a>
+								</Link>
 							))}
 						</div>
 					</div>
@@ -133,21 +105,31 @@ export function Footer() {
 						<span className="text-muted-foreground text-xs">Company</span>
 						<div className="mt-2 flex flex-col gap-2">
 							{company.map(({ href, title }) => (
-								<a
+								<Link
 									className="w-max text-sm hover:underline"
 									href={href}
 									key={title}
 								>
 									{title}
-								</a>
+								</Link>
 							))}
 						</div>
 					</div>
+					<div className="col-span-6 w-full md:col-span-1">
+						<span className="text-muted-foreground text-xs">Legal</span>
+						<div className="mt-2 flex flex-col gap-2">
+							<Link className="w-max text-sm hover:underline" href="/privacy">
+								Privacy
+							</Link>
+							<Link className="w-max text-sm hover:underline" href="/help">
+								Support Guidelines
+							</Link>
+						</div>
+					</div>
 				</div>
-				<div className="absolute inset-x-0 h-px w-full bg-border" />
-				<div className="flex w-full flex-col justify-between gap-2 py-4">
+				<div className="flex w-full flex-col justify-between gap-2 border-t border-border/50 py-4">
 					<p className="text-center font-light text-muted-foreground text-sm">
-						&copy; {new Date().getFullYear()} FoodHub, All rights reserved
+						&copy; {new Date().getFullYear()} FoodHub, All rights reserved.
 					</p>
 				</div>
 			</div>

@@ -33,7 +33,7 @@ export default function MealsByProvider({mealsData, providerName} : TMealsInterf
         <p className="text-muted-foreground">Browse {mealsData.length} delicious meal{mealsData.length !== 1 ? 's' : ''}</p>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {mealsData.map((meal) => (
           <MealCard 
             key={meal.id} 

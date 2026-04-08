@@ -165,6 +165,11 @@ export function SignUpForm(props: React.ComponentProps<typeof Card>) {
           text="Sign Up With Google"
         />
 
+        <SignInWithGoogleButton
+          text="Sign Up With Facebook"
+          provider="facebook"
+        />
+
         <FieldDescription className="text-center">
           Already have an account? <Link href="/login">Log in</Link>
         </FieldDescription>

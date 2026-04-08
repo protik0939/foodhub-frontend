@@ -1,487 +1,661 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { mealService } from "@/services/meal.service";
-import { Category, Meal, Order } from "@/types/meal.type";
-import { UserProfile } from "@/types/user.type";
+import { mealClientService } from "@/services/meal.client.service";
+import { Category, Meal, Order, SearchSuggestion } from "@/types/meal.type";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import Image from "next/image";
-import { Search, ShoppingCart, Clock, CheckCircle, XCircle, Package, MapPin, Phone, Store, TrendingUp, Sparkles, Star } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { userProfileService } from "@/services/user.client.service";
-import ReviewModal from "@/components/modules/review/ReviewModal";
-import MealCard from "@/components/modules/meal/MealCard";
+import {
+  ArrowRight,
+  Bot,
+  Brain,
+  ChartNoAxesCombined,
+  ChefHat,
+  Clock3,
+  MapPin,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Store,
+  Truck,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
+import MealCard from "@/components/modules/meal/MealCard";
+import ReviewModal from "@/components/modules/review/ReviewModal";
 
-const TopBannerImage = '/images/forHomepage.jpg'
+const heroMessages = [
+  "Discover city kitchens with real reviews",
+  "Order in minutes, track every step live",
+  "Get AI-ranked meal picks for your taste",
+];
+
+const heroImage = "/images/forHomepage.jpg";
 
 export default function CustomerPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [meals, setMeals] = useState<Meal[]>([]);
-  const [filteredMeals, setFilteredMeals] = useState<Meal[]>([]);
+  const [trendingMeals, setTrendingMeals] = useState<Meal[]>([]);
+  const [recommendedMeals, setRecommendedMeals] = useState<Meal[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [filteredMeals, setFilteredMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ordersLoading, setOrdersLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showProfileAlert, setShowProfileAlert] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [suggestionOpen, setSuggestionOpen] = useState(false);
+  const [activeHeroText, setActiveHeroText] = useState(0);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedOrderForReview, setSelectedOrderForReview] = useState<Order | null>(null);
+
   const { data: session } = authClient.useSession();
-  const router = useRouter();
-
 
   useEffect(() => {
-    const filterMeals = () => {
-      let filtered = meals;
+    const interval = setInterval(() => {
+      setActiveHeroText((prev) => (prev + 1) % heroMessages.length);
+    }, 2800);
 
-      if (selectedCategory !== "all") {
-        filtered = filtered.filter((meal) => meal.categoryId === selectedCategory);
-      }
-
-      if (searchTerm) {
-        filtered = filtered.filter(
-          (meal) =>
-            meal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            meal.description.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      setFilteredMeals(filtered);
-    };
-    filterMeals();
-  }, [selectedCategory, searchTerm, meals]);
-
-
-
-  const loadOrders = async (userId: string) => {
-    try {
-      setOrdersLoading(true);
-      const ordersData = await mealService.getOrdersByUserId(userId);
-      setOrders(ordersData);
-    } catch {
-      console.log("No Orders.");
-    }
-    setOrdersLoading(false);
-  };
-
-
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
-    const loadInitialData = async () => {
-
+    const loadData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const [categoriesData, mealsData] = await Promise.all([
-          mealService.getAllCategories(),
-          mealService.getAllMeals(),
+        const [categoryData, mealData, trendingData] = await Promise.all([
+          mealClientService.getAllCategories(),
+          mealClientService.getAllMeals(),
+          mealClientService.getTrendingMeals(),
         ]);
-        setCategories(categoriesData);
-        setMeals(mealsData);
-        setFilteredMeals(mealsData);
+
+        setCategories(categoryData);
+        setMeals(mealData);
+        setTrendingMeals(trendingData);
+        setFilteredMeals(mealData);
 
         if (session?.user?.id) {
-          const profile = await userProfileService.getUserProfile(session.user.id);
-          setUserProfile(profile);
-          loadOrders(session.user.id);
+          const [recommendations, userOrders] = await Promise.all([
+            mealClientService.getPersonalizedRecommendations(session.user.id),
+            mealClientService.getOrdersByUserId(session.user.id),
+          ]);
+          setRecommendedMeals(recommendations);
+          setOrders(userOrders);
         }
       } catch {
-        toast.error("Failed to load data");
+        toast.error("Failed to load homepage data. Please refresh.");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-    loadInitialData();
-  }, [session]);
 
+    loadData();
+  }, [session?.user?.id]);
 
-  const handleOrder = (mealId: string) => {
-    if (!session?.user) {
-      toast.error("Please login to order");
-      return;
+  useEffect(() => {
+    let nextMeals = [...meals];
+
+    if (selectedCategory !== "all") {
+      nextMeals = nextMeals.filter((meal) => meal.categoryId === selectedCategory);
     }
 
-    if (!userProfile?.address || !userProfile?.contactNo) {
-      setShowProfileAlert(true);
-      return;
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      nextMeals = nextMeals.filter(
+        (meal) =>
+          meal.name.toLowerCase().includes(term) ||
+          meal.description.toLowerCase().includes(term) ||
+          meal.category?.name.toLowerCase().includes(term),
+      );
     }
 
-    router.push(`/meals/${mealId}/order`);
-  };
+    setFilteredMeals(nextMeals);
+  }, [searchTerm, selectedCategory, meals]);
 
-  const handleReviewClick = (order: Order) => {
+  useEffect(() => {
+    const timeout = setTimeout(async () => {
+      if (searchTerm.trim().length < 2) {
+        setSuggestions([]);
+        return;
+      }
+
+      try {
+        const response = await mealClientService.getSearchSuggestions(searchTerm);
+        setSuggestions(response);
+      } catch {
+        setSuggestions([]);
+      }
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [searchTerm]);
+
+  const providerCount = useMemo(() => {
+    const providerIds = new Set(
+      meals
+        .map((meal) => meal.provider?.user.id)
+        .filter((providerId): providerId is string => Boolean(providerId)),
+    );
+
+    return providerIds.size;
+  }, [meals]);
+
+  const topProviders = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; image?: string; count: number }>();
+
+    meals.forEach((meal) => {
+      const providerId = meal.provider?.user?.id;
+      const providerName = meal.provider?.providerName || meal.provider?.user?.name;
+
+      if (!providerId || !providerName) {
+        return;
+      }
+
+      const existing = map.get(providerId);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        map.set(providerId, {
+          id: providerId,
+          name: providerName,
+          image: meal.provider?.user?.image,
+          count: 1,
+        });
+      }
+    });
+
+    return [...map.values()].sort((a, b) => b.count - a.count).slice(0, 6);
+  }, [meals]);
+
+  const stats = useMemo(
+    () => [
+      {
+        title: "Available Meals",
+        value: meals.length,
+        icon: ChefHat,
+      },
+      {
+        title: "Cuisine Categories",
+        value: categories.length,
+        icon: Sparkles,
+      },
+      {
+        title: "Partner Kitchens",
+        value: providerCount,
+        icon: Store,
+      },
+      {
+        title: "Avg Delivery Window",
+        value: "32m",
+        icon: Truck,
+      },
+    ],
+    [categories.length, meals.length, providerCount],
+  );
+
+  const isGuest = session?.user == null;
+  const pendingReviewOrders = orders.filter(
+    (order) => order.status === "DELIVERED" && (!order.reviews || order.reviews.length === 0),
+  );
+
+  const openReviewModal = (order: Order) => {
     setSelectedOrderForReview(order);
     setReviewModalOpen(true);
   };
 
-  const handleReviewSubmitted = () => {
-    if (session?.user?.id) {
-      loadOrders(session.user.id);
+  const handleReviewSubmitted = async () => {
+    if (!session?.user?.id) {
+      return;
     }
+
+    const userOrders = await mealClientService.getOrdersByUserId(session.user.id);
+    setOrders(userOrders);
   };
 
-  const getRecentMeals = () => {
-    return [...meals]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 6);
-  };
-
-  const getProviders = () => {
-    const providerMap = new Map();
-    // console.log(meals);
-    meals.forEach((meal) => {
-      if (meal.provider && !providerMap.has(meal.providerId)) {
-        providerMap.set(meal.providerId, [meal.provider.user.name, meal.provider.user.image, meal.provider.user.id, meal.provider.providerName]);
-      }
-    });
-    console.log("This is providers: ", providerMap);
-    return Array.from(providerMap.values());
-  };
-
-  const getOrderStatusIcon = (status: string) => {
-    switch (status) {
-      case "PREPARING":
-        return <Clock className="w-4 h-4" />;
-      case "READY":
-        return <Package className="w-4 h-4" />;
-      case "DELIVERED":
-        return <CheckCircle className="w-4 h-4" />;
-      case "CANCELLED":
-        return <XCircle className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
-    }
-  };
-
-  const getOrderStatusColor = (status: string) => {
-    switch (status) {
-      case "PREPARING":
-        return "bg-yellow-500";
-      case "READY":
-        return "bg-blue-500";
-      case "DELIVERED":
-        return "bg-green-500";
-      case "CANCELLED":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-linear-to-b from-background to-muted/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-48 w-full" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+  const allMealsContent = (() => {
+    if (loading) {
+      return (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 8 }, (_, index) => (
+            <Skeleton key={`all-skeleton-${index}`} className="h-105 rounded-2xl" />
+          ))}
         </div>
+      );
+    }
+
+    if (filteredMeals.length === 0) {
+      return (
+        <Card className="app-card">
+          <CardContent className="p-10 text-center text-muted-foreground">
+            No meals match your current search. Try a different keyword or category.
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {filteredMeals.slice(0, 8).map((meal) => (
+          <MealCard key={meal.id} meal={meal} onOrder={() => undefined} />
+        ))}
       </div>
     );
-  }
-
-  const recentMeals = getRecentMeals();
-  const providers = getProviders();
-  console.log(providers);
+  })();
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-background to-muted/20">
-      <div className="relative text-white overflow-hidden">
-        <Image
-          src={TopBannerImage}
-          alt="Food banner"
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B] via-[#0B0B0B50] to-transparent hidden dark:block" />
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent dark:hidden" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 ">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight drop-shadow-lg">
-              Delicious Food, Delivered Fast
-            </h1>
-            <div className="text-lg md:text-xl mb-8 text-white/90 max-w-2xl mx-auto drop-shadow-lg">
-              Order from the best local restaurants and get your favorite meals delivered to your doorstep
+    <div className="pb-16">
+      <section className="relative min-h-[62vh] overflow-hidden border-b border-border/60">
+        <Image src={heroImage} alt="Fresh meals prepared by local kitchens" fill priority className="object-cover" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/55 to-black/35" />
+
+        <div className="app-shell relative z-10 flex min-h-[62vh] flex-col justify-center py-14 text-white">
+          <Badge className="mb-6 w-max border-none bg-primary text-primary-foreground">
+            Smart Food Discovery Platform
+          </Badge>
+          <h1 className="max-w-3xl text-balance text-4xl font-bold leading-tight md:text-6xl">
+            Professional ordering experience for customers and local kitchens
+          </h1>
+          <p className="mt-4 max-w-3xl text-lg text-white/90 md:text-xl">
+            {heroMessages[activeHeroText]}
+          </p>
+
+          <div className="mt-7 grid w-full max-w-2xl gap-3 sm:grid-cols-[1fr_auto]">
+            <div className="relative">
+              <Search className="absolute left-3 top-3.5 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search meals, cuisines, or kitchen names"
+                className="h-11 border-border bg-background/95 pl-9 text-foreground placeholder:text-muted-foreground"
+                value={searchTerm}
+                onChange={(event) => {
+                  setSearchTerm(event.target.value);
+                  setSuggestionOpen(true);
+                }}
+                onBlur={() => setTimeout(() => setSuggestionOpen(false), 120)}
+                onFocus={() => setSuggestionOpen(true)}
+              />
+
+              {suggestionOpen && suggestions.length > 0 ? (
+                <div className="floating-scrollbar absolute z-50 mt-2 max-h-44 w-full overflow-y-auto overflow-x-hidden rounded-xl border border-border bg-background p-2 text-foreground shadow-xl sm:h-28">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.id}
+                      type="button"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left hover:bg-muted"
+                      onMouseDown={() => {
+                        setSearchTerm(suggestion.label);
+                        setSuggestionOpen(false);
+                      }}
+                    >
+                      <span className="text-sm">{suggestion.label}</span>
+                      <span className="text-xs text-muted-foreground">
+                        AI {Math.round(suggestion.confidence * 100)}%
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
-            <div className="max-w-2xl mx-auto">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search for dishes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-4 py-6 text-lg bg-white text-black"
-                />
-              </div>
-            </div>
+
+            <Button asChild size="lg" className="h-11">
+              <Link href="/explore">Explore Meals</Link>
+            </Button>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-white/85">
+            <span className="inline-flex items-center gap-2">
+              <ShieldCheck className="size-4" /> Verified partners
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Clock3 className="size-4" /> Live order statuses
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Bot className="size-4" /> AI suggestions enabled
+            </span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+      <section className="app-shell mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((item) => (
+          <Card key={item.title} className="app-card border-border/60">
+            <CardContent className="flex items-center justify-between p-5">
+              <div>
+                <p className="text-sm text-muted-foreground">{item.title}</p>
+                <p className="mt-1 text-3xl font-semibold">{item.value}</p>
+              </div>
+              <item.icon className="size-8 text-primary" />
+            </CardContent>
+          </Card>
+        ))}
+      </section>
 
-        <section>
-          <div className="flex items-center gap-2 mb-6">
-            <Sparkles className="w-6 h-6 text-orange-500" />
-            <h2 className="text-2xl md:text-3xl font-bold">Browse by Category</h2>
-          </div>
-          <div className="flex flex-wrap gap-3">
+      <section className="app-shell mt-12">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-heading">AI Overview of FoodHub</h2>
+          <Badge className="border border-border bg-card text-foreground">Live AI modules</Badge>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="app-card border-primary/30">
+            <CardHeader>
+              <CardTitle className="inline-flex items-center gap-2 text-lg">
+                <Search className="size-5 text-primary" /> AI Search Suggestions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>Suggestions are generated as you type with confidence scores to speed up discovery.</p>
+              <p className="text-foreground">Live suggestions shown: {suggestions.length}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="app-card border-secondary/40">
+            <CardHeader>
+              <CardTitle className="inline-flex items-center gap-2 text-lg">
+                <Brain className="size-5 text-secondary" /> Personalized Ranking
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>Meal recommendations adjust based on order behavior and category preferences.</p>
+              <p className="text-foreground">Meals recommended now: {recommendedMeals.length}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="app-card border-accent/40">
+            <CardHeader>
+              <CardTitle className="inline-flex items-center gap-2 text-lg">
+                <Bot className="size-5 text-accent" /> Conversational Assistant
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>FoodHub AI chatbot helps users compare meals, budgets, and category options instantly.</p>
+              <p className="text-foreground">Trending set tracked: {trendingMeals.length}</p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="app-shell mt-12 grid gap-4 lg:grid-cols-2">
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2">
+              <ChartNoAxesCombined className="size-5 text-primary" /> AI Journey
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>1. You enter a keyword and AI suggestion service matches top meals in real time.</p>
+            <p>2. The ranking model highlights trending and high-relevance dishes.</p>
+            <p>3. Personalized recommendations are tuned using your order activity.</p>
+            <p>4. Chat assistant helps narrow choices by budget, category, or dietary intent.</p>
+          </CardContent>
+        </Card>
+
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2">
+              <ShieldCheck className="size-5 text-secondary" /> Customer Trust Layer
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>Verified kitchens and transparent ratings keep meal quality decisions clear.</p>
+            <p>Order states are visible from preparing to delivered with consistent updates.</p>
+            <p>Review workflow allows quick feedback directly from delivered orders.</p>
+            <p>Privacy and support pages are always available for clear policy access.</p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="app-shell mt-12">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-heading">Browse by Category</h2>
+          <Button asChild variant="ghost">
+            <Link href="/categories">View all categories</Link>
+          </Button>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <Button
+            variant={selectedCategory === "all" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("all")}
+          >
+            All
+          </Button>
+          {categories.map((category) => (
             <Button
-              variant={selectedCategory === "all" ? "default" : "outline"}
-              onClick={() => setSelectedCategory("all")}
-              className={selectedCategory === "all" ? "bg-orange-500 hover:bg-orange-600 cursor-pointer" : "cursor-pointer"}
+              key={category.id}
+              variant={selectedCategory === category.id ? "default" : "outline"}
+              onClick={() => setSelectedCategory(category.id)}
             >
-              All Categories
+              {category.name}
             </Button>
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                onClick={() => setSelectedCategory(category.id)}
-                className={selectedCategory === category.id ? "bg-orange-500 hover:bg-orange-600 cursor-pointer" : "cursor-pointer"}
-              >
-                {category.name}
-              </Button>
+          ))}
+        </div>
+      </section>
+
+      <section className="app-shell mt-12">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-heading">AI Trending Meals</h2>
+          <p className="text-sm text-muted-foreground">Ranked by order activity and freshness</p>
+        </div>
+
+        {loading ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={`trending-skeleton-${index}`} className="h-105 rounded-2xl" />
             ))}
           </div>
-        </section>
-
-        {recentMeals.length > 0 && selectedCategory === "all" && !searchTerm && (
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="w-6 h-6 text-orange-500" />
-              <h2 className="text-2xl md:text-3xl font-bold">Recently Added</h2>
-            </div>
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {recentMeals.map((meal) => (
-                  <CarouselItem key={meal.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 ">
-                    <MealCard
-                      meal={meal}
-                      onOrder={handleOrder}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12" />
-              <CarouselNext className="hidden md:flex -right-4 lg:-right-12" />
-            </Carousel>
-          </section>
-        )}
-
-        {providers.length > 0 && selectedCategory === "all" && !searchTerm && (
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <Store className="w-6 h-6 text-orange-500" />
-              <h2 className="text-2xl md:text-3xl font-bold">Popular Restaurants</h2>
-            </div>
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {providers.map((provider, index) => (
-                  <CarouselItem key={index} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 cursor-pointer">
-                    <Link href={`/topbrands/${provider[2]}`}>
-                      <Card className="hover:shadow-lg transition-shadow h-full">
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-4">
-                            <Image src={provider[1] ? provider[1] : "/images/dummy-avatar.jpg"} height={50} width={50} alt="" className="w-16 h-16 rounded-lg" />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-bold text-lg mb-1 truncate">{provider[3] ? provider[3] : provider[1]}</div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12" />
-              <CarouselNext className="hidden md:flex -right-4 lg:-right-12" />
-            </Carousel>
-          </section>
-        )}
-
-
-
-        {session?.user && selectedCategory === "all" && !searchTerm && orders.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <ShoppingCart className="w-6 h-6 text-orange-500" />
-              <h2 className="text-2xl md:text-3xl font-bold">Your Orders</h2>
-            </div>
-            {ordersLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-24" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {orders.map((order) => (
-                  <Card key={order.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        {order.meal?.imageUrl && (
-                          <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-                            <Image
-                              src={order.meal.imageUrl}
-                              alt={order.meal.name || "Meal"}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold truncate">{order.meal?.name}</h3>
-                          <div className="text-sm text-muted-foreground">
-                            ${order.meal?.price.toFixed(2)} × {order.quantity}
-                          </div>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge className={`${getOrderStatusColor(order.status)} text-white flex items-center gap-1`}>
-                              {getOrderStatusIcon(order.status)}
-                              <span className="text-xs">{order.status}</span>
-                            </Badge>
-                          </div>
-                          {order.status === "DELIVERED" && !order.reviews?.length && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="mt-2 w-full"
-                              onClick={() => handleReviewClick(order)}
-                            >
-                              <Star className="w-3 h-3 mr-1 cursor-pointer" />
-                              Write Review
-                            </Button>
-                          )}
-                          {order.reviews && order.reviews.length > 0 && (
-                            <div className="mt-2 flex items-center gap-1 text-sm">
-                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                              <span className="font-medium">{order.reviews[0].reviewPoint}.0</span>
-                              <span className="text-muted-foreground text-xs">Reviewed</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-
-        <section>
-          <div className="flex items-center gap-2 mb-6">
-            <Package className="w-6 h-6 text-orange-500" />
-            <h2 className="text-2xl md:text-3xl font-bold">
-              {selectedCategory !== "all"
-                ? categories.find(c => c.id === selectedCategory)?.name
-                : searchTerm
-                  ? `Search Results for "${searchTerm}"`
-                  : "All Dishes"}
-            </h2>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {trendingMeals.slice(0, 8).map((meal) => (
+              <MealCard key={meal.id} meal={meal} onOrder={() => undefined} />
+            ))}
           </div>
-          {filteredMeals.length === 0 ? (
-            <div className="text-center py-16">
-              <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">No dishes found</h3>
-              <div className="text-muted-foreground">
-                Try adjusting your search or filter to find what you&apos;re looking for
+        )}
+      </section>
+
+      <section className="app-shell mt-12">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-heading">Personalized for You</h2>
+          <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+            <Brain className="size-4" /> Behavior-based recommendations
+          </span>
+        </div>
+
+        {isGuest ? (
+          <Card className="app-card">
+            <CardContent className="flex flex-col items-start justify-between gap-3 p-6 md:flex-row md:items-center">
+              <div>
+                <h3 className="text-lg font-semibold">Sign in to unlock personalized meal picks</h3>
+                <p className="text-sm text-muted-foreground">
+                  We analyze your orders and browsing behavior to surface meals you are likely to love.
+                </p>
               </div>
-            </div>
+              <Button asChild>
+                <Link href="/login">Sign in now</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {recommendedMeals.slice(0, 8).map((meal) => (
+              <MealCard key={meal.id} meal={meal} onOrder={() => undefined} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {isGuest ? null : (
+        <section className="app-shell mt-12">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="section-heading">Review Your Delivered Orders</h2>
+            <Button asChild variant="ghost">
+              <Link href="/your-orders">Go to all orders</Link>
+            </Button>
+          </div>
+
+          {pendingReviewOrders.length === 0 ? (
+            <Card className="app-card">
+              <CardContent className="p-6 text-sm text-muted-foreground">
+                No pending reviews right now. Once an order is delivered, you can submit a rating and feedback here.
+              </CardContent>
+            </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredMeals.map((meal) => (
-                <MealCard
-                  key={meal.id}
-                  meal={meal}
-                  onOrder={handleOrder}
-                />
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {pendingReviewOrders.slice(0, 6).map((order) => (
+                <Card key={order.id} className="app-card">
+                  <CardContent className="space-y-3 p-4">
+                    <p className="font-semibold">{order.meal?.name || "Ordered meal"}</p>
+                    <p className="text-sm text-muted-foreground">Order ID: {order.id.slice(0, 8)}...</p>
+                    <Button variant="outline" onClick={() => openReviewModal(order)}>
+                      <Star className="mr-2 size-4" /> Write Review
+                    </Button>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
         </section>
+      )}
 
+      <section className="app-shell mt-12">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-heading">Popular Partner Kitchens</h2>
+          <Button asChild variant="ghost">
+            <Link href="/topbrands">Explore all partners</Link>
+          </Button>
+        </div>
 
-
-
-      </div>
-
-      <AlertDialog open={showProfileAlert} onOpenChange={setShowProfileAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-orange-500" />
-              Complete Your Profile
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <div>To place an order, please complete your profile with:</div>
-              <div className="list-disc list-inside space-y-1 ml-2">
-                {!userProfile?.address && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Delivery Address
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {topProviders.map((provider) => (
+            <Link key={provider.id} href={`/topbrands/${provider.id}`}>
+              <Card className="app-card h-full transition-colors hover:border-primary/50">
+                <CardContent className="flex items-center gap-4 p-5">
+                  <div className="relative size-14 overflow-hidden rounded-xl bg-muted">
+                    {provider.image ? (
+                      <Image src={provider.image} alt={provider.name} fill className="object-cover" />
+                    ) : (
+                      <div className="flex size-full items-center justify-center text-sm font-semibold text-muted-foreground">
+                        {provider.name.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                )}
-                {!userProfile?.contactNo && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    Contact Number
+                  <div>
+                    <h3 className="font-semibold">{provider.name}</h3>
+                    <p className="text-sm text-muted-foreground">{provider.count} listed meals</p>
                   </div>
-                )}
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="app-shell mt-12">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-heading">All Meals</h2>
+          <Button asChild variant="outline">
+            <Link href="/explore">Advanced filters</Link>
+          </Button>
+        </div>
+
+        {allMealsContent}
+      </section>
+
+      <section className="app-shell mt-12 grid gap-4 lg:grid-cols-3">
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2">
+              <Truck className="size-5 text-primary" /> Delivery Flow
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>1. Browse meals and compare ratings.</p>
+            <p>2. Confirm order details and address.</p>
+            <p>3. Track status from preparing to delivered.</p>
+          </CardContent>
+        </Card>
+
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2">
+              <ChartNoAxesCombined className="size-5 text-secondary" /> Smart Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>AI ranks meals using demand and purchase behavior.</p>
+            <p>Search suggestions adapt as you type.</p>
+            <p>Recommendations update based on your order history.</p>
+          </CardContent>
+        </Card>
+
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2">
+              <Users className="size-5 text-accent" /> Support Quality
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>Active support via the Help Center for refunds and issues.</p>
+            <p>Verified provider profiles and order-level reviews.</p>
+            <p>Consistent communication from checkout to handoff.</p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="app-shell mt-12 grid gap-4 lg:grid-cols-2">
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle>Frequently Asked Questions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <div>
+              <h3 className="font-semibold">Can I cancel an order after placing it?</h3>
+              <p className="text-muted-foreground">
+                Yes. Orders in PREPARING state can be canceled from your order history.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold">How do recommendations work?</h3>
+              <p className="text-muted-foreground">
+                Recommendations are generated from category preferences, order frequency, and trending patterns.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold">Can I order from multiple providers?</h3>
+              <p className="text-muted-foreground">
+                Yes. Meals from any listed provider can be ordered individually through checkout.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="app-card bg-primary/10">
+          <CardContent className="flex h-full flex-col justify-between p-6">
+            <div>
+              <h2 className="text-2xl font-semibold">Get weekly meal discoveries</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Subscribe to receive top-rated dishes, new kitchens, and seasonal picks every week.
+              </p>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <Input placeholder="Enter your email" type="email" className="bg-background" />
+                <Button>
+                  Subscribe <ArrowRight className="size-4" />
+                </Button>
               </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => router.push("/profile")}
-              className="bg-orange-500 hover:bg-orange-600"
-            >
-              Go to Profile
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </div>
+            <div className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <MapPin className="size-3.5" /> Serving customers across major city neighborhoods.
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
-      {selectedOrderForReview && (
+      {selectedOrderForReview ? (
         <ReviewModal
           open={reviewModalOpen}
           onOpenChange={setReviewModalOpen}
@@ -490,7 +664,7 @@ export default function CustomerPage() {
           mealImage={selectedOrderForReview.meal?.imageUrl || ""}
           onReviewSubmitted={handleReviewSubmitted}
         />
-      )}
+      ) : null}
     </div>
   );
 }

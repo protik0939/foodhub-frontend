@@ -19,12 +19,22 @@ export interface Meal {
   provider?: {
     providerName: string;
     providerEmail: string;
-    user:{
+    user: {
       name: string;
       image: string;
       id: string;
-    }
+    };
   };
+  trendScore?: number;
+  recommendationScore?: number;
+}
+
+export interface SearchSuggestion {
+  id: string;
+  label: string;
+  category: string;
+  provider?: string | null;
+  confidence: number;
 }
 
 export interface CreateMealData {

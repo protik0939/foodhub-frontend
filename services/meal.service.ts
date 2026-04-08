@@ -1,4 +1,4 @@
-import { Category, CreateMealData, CreateReviewData, Meal, Order, Review, ReviewStats } from "@/types/meal.type";
+import { Category, CreateMealData, CreateReviewData, Meal, Order, Review, ReviewStats, SearchSuggestion } from "@/types/meal.type";
 
 const appUrl =
   process.env.NEXT_PUBLIC_APP_URL ||
@@ -92,6 +92,18 @@ export const mealService = {
     return response.json();
   },
 
+  getMealById: async function (mealId: string): Promise<Meal> {
+    const response = await fetch(`${appUrl}/api/meals/${mealId}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch meal");
+    }
+
+    return response.json();
+  },
+
   getOrdersByProviderId: async function (providerId: string): Promise<Order[]> {
     const response = await fetch(`${appUrl}/orders/provider/${providerId}`, {
       credentials: "include",
@@ -127,6 +139,46 @@ export const mealService = {
     });
     if (!response.ok) {
       throw new Error("Failed to fetch meals by category");
+    }
+
+    return response.json();
+  },
+
+  getSearchSuggestions: async function (query: string): Promise<SearchSuggestion[]> {
+    const response = await fetch(
+      `${appUrl}/api/ai/suggestions?q=${encodeURIComponent(query)}`,
+      {
+        cache: "no-store",
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch search suggestions");
+    }
+
+    return response.json();
+  },
+
+  getTrendingMeals: async function (): Promise<Meal[]> {
+    const response = await fetch(`${appUrl}/api/meals/ai/trending`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch trending meals");
+    }
+
+    return response.json();
+  },
+
+  getPersonalizedRecommendations: async function (userId: string): Promise<Meal[]> {
+    const response = await fetch(`${appUrl}/api/meals/ai/recommendations/${userId}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch recommendations");
     }
 
     return response.json();

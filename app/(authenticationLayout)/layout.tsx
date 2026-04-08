@@ -15,8 +15,8 @@ export default function CommonLayout({
           className="object-cover opacity-20"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-white/100 to-white/0 dark:hidden" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/100 to-black/0 hidden dark:block" />
+        <div className="absolute inset-0 bg-linear-to-t from-white to-white/0 dark:hidden" />
+        <div className="absolute inset-0 hidden bg-linear-to-t from-black to-black/0 dark:block" />
       </div>
 
 

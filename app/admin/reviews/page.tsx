@@ -126,7 +126,7 @@ export default function AdminReviewsPage() {
             <Card key={review.id}>
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold shrink-0">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-orange-400 to-red-500 font-semibold text-white">
                     {review.order?.user?.image ? (
                       <div className="relative w-12 h-12 rounded-full overflow-hidden">
                         <Image

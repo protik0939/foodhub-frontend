@@ -1,4 +1,5 @@
 import { Footer } from "@/components/footer";
+import FoodHubChatbot from "@/components/modules/ai/FoodHubChatbot";
 import NavbarSection from "@/components/Navbar";
 import { userService } from "@/services/user.service";
 import { redirect } from "next/navigation";
@@ -12,7 +13,6 @@ export default async function CommonLayout({
 }>) {
 
   const session = await userService.getSession();
-  console.log("1) ", session);
 
   if (session?.data?.user?.role === "NONE") {
     return redirect("/select-role");
@@ -23,10 +23,11 @@ export default async function CommonLayout({
   }
 
   return (
-    <div>
+    <div className="min-h-screen">
       <NavbarSection />
-      {children}
+      <main>{children}</main>
       <Footer />
+      <FoodHubChatbot />
     </div>
   );
 }

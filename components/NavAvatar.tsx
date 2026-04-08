@@ -13,11 +13,14 @@ import {
 import { authClient } from "@/lib/auth-client"
 import { logoutEverywhere } from "@/lib/logout-helper"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import type { TUser } from "@/types/user.type"
 
 export function NavAvatar() {
     const { data: session, isPending } = authClient.useSession()
     const router = useRouter();
+    const role = (session?.user as TUser | undefined)?.role;
+    const dashboardHref = role === "ADMIN" ? "/admin" : role === "PROVIDER" ? "/" : "/dashboard";
     
     const handleLogout = async () => {
         await logoutEverywhere({
@@ -29,7 +32,7 @@ export function NavAvatar() {
 
     if (!session) {
         return (
-            <div className="flex gap-2 hidden lg:block">
+            <div className="hidden gap-2 lg:flex">
                 <Button asChild variant="ghost">
                     <Link href="/login">Log in</Link>
                 </Button>
@@ -44,7 +47,17 @@ export function NavAvatar() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full cursor-pointer">
-                    <Image src={session.user?.image ? session.user?.image : "/images/dummy-avatar.jpg"} alt={session.user?.name} height={40} width={40} className="w-10 h-10 rounded-full aspect-square"/>
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={session.user?.image || ""} alt={session.user?.name} />
+                        <AvatarFallback>
+                            {session.user?.name
+                                ?.split(" ")
+                                .map((part) => part[0])
+                                .join("")
+                                .slice(0, 2)
+                                .toUpperCase() || "FH"}
+                        </AvatarFallback>
+                    </Avatar>
                 </Button>
             </DropdownMenuTrigger>
 
@@ -54,7 +67,10 @@ export function NavAvatar() {
                         <Link href="/profile">Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="cursor-pointer">
-                        <Link href="/settings">Settings</Link>
+                        <Link href={dashboardHref}>Dashboard</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link href="/help">Help Center</Link>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, CreateMealData, CreateReviewData, Meal, Order, Review, ReviewStats } from "@/types/meal.type";
+import { Category, CreateMealData, CreateReviewData, Meal, Order, Review, ReviewStats, SearchSuggestion } from "@/types/meal.type";
 
 export const mealClientService = {
   uploadToImgbb: async function (imageFile: File): Promise<string> {
@@ -89,6 +89,22 @@ export const mealClientService = {
     return response.json();
   },
 
+  getAllMeals: async function (searchTerm?: string): Promise<Meal[]> {
+    const url = searchTerm
+      ? `/api/meals?search=${encodeURIComponent(searchTerm)}`
+      : `/api/meals`;
+
+    const response = await fetch(url, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch meals");
+    }
+
+    return response.json();
+  },
+
   getMealById: async function (mealId: string): Promise<Meal> {
     const response = await fetch(`/api/meals/${mealId}`, {
       cache: "no-store",
@@ -96,6 +112,46 @@ export const mealClientService = {
 
     if (!response.ok) {
       throw new Error("Failed to fetch meal");
+    }
+
+    return response.json();
+  },
+
+  getSearchSuggestions: async function (query: string): Promise<SearchSuggestion[]> {
+    const response = await fetch(
+      `/api/ai/suggestions?q=${encodeURIComponent(query)}`,
+      {
+        cache: "no-store",
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch suggestions");
+    }
+
+    return response.json();
+  },
+
+  getTrendingMeals: async function (): Promise<Meal[]> {
+    const response = await fetch(`/api/meals/ai/trending`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch trending meals");
+    }
+
+    return response.json();
+  },
+
+  getPersonalizedRecommendations: async function (userId: string): Promise<Meal[]> {
+    const response = await fetch(`/api/meals/ai/recommendations/${userId}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch recommendations");
     }
 
     return response.json();

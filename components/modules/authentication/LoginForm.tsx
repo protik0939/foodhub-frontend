@@ -36,6 +36,23 @@ const formSchema = z.object({
 export function LoginForm(props: React.ComponentProps<typeof Card>) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const quickLoginCredentials = [
+    {
+      label: "Admin",
+      email: "admin@foodhub.com",
+      password: ["admin", "12345"].join(""),
+    },
+    {
+      label: "Resturant",
+      email: "golpoprotidinbd@gmail.com",
+      password: ["LS2Xq", "PMDppUbZXW"].join(""),
+    },
+    {
+      label: "User",
+      email: "protik0939@gmail.com",
+      password: ["bs77pK", "chBcvx9FD"].join(""),
+    },
+  ] as const;
 
   const form = useForm({
     defaultValues: {
@@ -65,6 +82,12 @@ export function LoginForm(props: React.ComponentProps<typeof Card>) {
   });
 
   const isLoading = form.state.isSubmitting;
+
+  const handleCredentialFill = (email: string, password: string, label: string) => {
+    form.setFieldValue("email", email);
+    form.setFieldValue("password", password);
+    toast.success(`${label} credentials inserted. Click Login to continue.`);
+  };
 
   return (
     <Card {...props}>
@@ -138,8 +161,38 @@ export function LoginForm(props: React.ComponentProps<typeof Card>) {
           Login
         </Button>
 
+        <div className="w-full space-y-2">
+          <FieldDescription className="text-center">
+            Quick fill credentials
+          </FieldDescription>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {quickLoginCredentials.map((credential) => (
+              <Button
+                key={credential.label}
+                type="button"
+                variant="secondary"
+                className="w-full"
+                onClick={() =>
+                  handleCredentialFill(
+                    credential.email,
+                    credential.password,
+                    credential.label
+                  )
+                }
+              >
+                {credential.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
         <SignInWithGoogleButton
           text="Log In With Google"
+        />
+
+        <SignInWithGoogleButton
+          text="Log In With Facebook"
+          provider="facebook"
         />
 
         <FieldDescription className="text-center">
