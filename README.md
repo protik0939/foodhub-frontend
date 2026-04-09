@@ -10,7 +10,7 @@
 
 **A modern, full-featured food delivery web application built with Next.js 16, React 19, Tailwind CSS v4, and Radix UI.**
 
-[Live App](https://bdfoodhub.vercel.app) · [Backend Repo](../FoodHub-Backend/)
+[Live App](https://bdfoodhub.vercel.app) · [Backend Repo](https://github.com/protik0939/FoodHub-Backend)
 
 </div>
 
